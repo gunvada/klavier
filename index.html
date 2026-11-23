@@ -192,30 +192,6 @@ img { display: block; max-width: 100%; }
 .points strong { font-family: var(--font-serif-kr); font-weight: 700; font-size: 1.0625rem; }
 .points span { color: var(--text-2); font-size: 15px; }
 
-/* ── 건반 ── */
-.band { background: var(--band); color: var(--band-text); }
-.band .wrap { padding-block: 72px; display: grid; gap: 32px; justify-items: center; text-align: center; }
-.band h2 { font-family: var(--font-serif-kr); font-weight: 700; font-size: clamp(1.4rem, 3vw, 1.9rem); line-height: 1.5; text-wrap: balance; }
-.band .hint { font-size: 14px; color: var(--band-text-2); margin-top: 6px; }
-.keys {
-  position: relative; display: flex; width: min(100%, 600px);
-  aspect-ratio: 16 / 7; max-width: 100%; user-select: none; -webkit-user-select: none; touch-action: manipulation;
-}
-.key { font: inherit; cursor: pointer; padding: 0; margin: 0; -webkit-tap-highlight-color: transparent; }
-.key.w {
-  flex: 1 1 0; min-width: 0; background: var(--key-white); border: 1px solid var(--key-edge); border-left-width: 0;
-  border-radius: 0 0 2px 2px; display: flex; align-items: flex-end; justify-content: center;
-  padding-bottom: 12px; color: #66615C; font-size: 13px; font-weight: 400; transition: background 150ms var(--ease);
-}
-.key.w:first-child { border-left-width: 1px; }
-.key.b {
-  position: absolute; top: 0; width: 7.5%; height: 60%; background: var(--key-black);
-  border: 1px solid var(--key-black); border-top: 0; border-radius: 0 0 2px 2px; z-index: 2; transition: background 150ms var(--ease);
-}
-.key.w.down { background: var(--key-white-down); }
-.key.b.down { background: var(--key-black-down); }
-.key:focus-visible { outline: 2px solid var(--band-text-2); outline-offset: -4px; z-index: 3; }
-
 /* ── 인사말 ── */
 .letter blockquote p {
   font-family: var(--font-serif-kr); font-size: clamp(1.15rem, 2.2vw, 1.4rem); line-height: 1.8; text-wrap: pretty;
@@ -266,12 +242,11 @@ section[id] { scroll-margin-top: calc(var(--nav-h) + env(safe-area-inset-top, 0p
   .points li { grid-template-columns: minmax(0, 1fr); }
   .nav { gap: 2px 16px; }
   .nav a { font-size: 13px; }
-  .key.w { font-size: 11px; padding-bottom: 8px; }
   .notice .dates { white-space: normal; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .btn, .key, .nav a, .course { transition: none; }
+  .btn, .nav a, .course { transition: none; }
   .btn:hover, .course:hover { transform: none; }
 }
 
@@ -445,31 +420,6 @@ table.fee { width: 100%; min-width: 560px; border-collapse: collapse; font-size:
       </div>
     </div>
   </section>
-  <section class="band" aria-labelledby="keys-title">
-    <div class="wrap">
-      <div>
-        <h2 id="keys-title">먼저 한 음 눌러 보세요</h2>
-        <p class="hint">건반을 누르면 소리가 납니다.</p>
-      </div>
-      <div class="keys" id="keys" role="group" aria-label="한 옥타브 건반">
-        <button class="key w" type="button" data-f="261.63" aria-label="도">도</button>
-        <button class="key b" type="button" data-f="277.18" aria-label="도 샤프" style="left: 8.75%"></button>
-        <button class="key w" type="button" data-f="293.66" aria-label="레">레</button>
-        <button class="key b" type="button" data-f="311.13" aria-label="레 샤프" style="left: 21.25%"></button>
-        <button class="key w" type="button" data-f="329.63" aria-label="미">미</button>
-        <button class="key w" type="button" data-f="349.23" aria-label="파">파</button>
-        <button class="key b" type="button" data-f="369.99" aria-label="파 샤프" style="left: 46.25%"></button>
-        <button class="key w" type="button" data-f="392.00" aria-label="솔">솔</button>
-        <button class="key b" type="button" data-f="415.30" aria-label="솔 샤프" style="left: 58.75%"></button>
-        <button class="key w" type="button" data-f="440.00" aria-label="라">라</button>
-        <button class="key b" type="button" data-f="466.16" aria-label="라 샤프" style="left: 71.25%"></button>
-        <button class="key w" type="button" data-f="493.88" aria-label="시">시</button>
-        <button class="key w" type="button" data-f="523.25" aria-label="높은 도">도</button>
-      </div>
-    </div>
-  </section>
-
-
   <section class="sec">
     <div class="wrap">
       <div class="cta-row sec-title"><div><div class="eyebrow">NOTICE</div><h2 class="h2">공지사항</h2></div><a class="btn btn-ghost" href="#notice">전체 보기</a></div>
@@ -661,42 +611,6 @@ table.fee { width: 100%; min-width: 560px; border-collapse: collapse; font-size:
 </footer>
 <script>
 (function () {
-  var ctx = null;
-  function sound(freq) {
-    var AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return;
-    try {
-      ctx = ctx || new AC();
-      if (ctx.state === "suspended") ctx.resume();
-      var t = ctx.currentTime;
-      var out = ctx.createGain();
-      out.gain.setValueAtTime(0.0001, t);
-      out.gain.exponentialRampToValueAtTime(0.26, t + 0.012);
-      out.gain.exponentialRampToValueAtTime(0.0001, t + 1.8);
-      out.connect(ctx.destination);
-      [[1, "triangle", 1], [2, "sine", 0.22], [3, "sine", 0.07]].forEach(function (p) {
-        var o = ctx.createOscillator(), g = ctx.createGain();
-        o.type = p[1]; o.frequency.value = freq * p[0]; g.gain.value = p[2];
-        o.connect(g); g.connect(out); o.start(t); o.stop(t + 1.85);
-      });
-    } catch (e) { /* 소리를 낼 수 없는 환경에서는 눌림 표시만 남깁니다 */ }
-  }
-  function press(key) {
-    sound(parseFloat(key.dataset.f));
-    key.classList.add("down");
-    setTimeout(function () { key.classList.remove("down"); }, 180);
-  }
-  var keys = document.getElementById("keys");
-  keys.addEventListener("pointerdown", function (e) {
-    var k = e.target.closest(".key");
-    if (k) press(k);
-  });
-  keys.addEventListener("keydown", function (e) {
-    if (e.key !== "Enter" && e.key !== " ") return;
-    var k = e.target.closest(".key");
-    if (k && !e.repeat) { e.preventDefault(); press(k); }
-  });
-
   var addr = document.getElementById("addr"), note = document.getElementById("copied");
   document.getElementById("copy-addr").addEventListener("click", function () {
     function selectIt() {
@@ -705,9 +619,7 @@ table.fee { width: 100%; min-width: 560px; border-collapse: collapse; font-size:
       note.textContent = "주소를 선택했습니다. 복사해 주세요.";
     }
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(addr.textContent).then(function () {
-        note.textContent = "주소를 복사했습니다.";
-      }, selectIt);
+      navigator.clipboard.writeText(addr.textContent).then(function () { note.textContent = "주소를 복사했습니다."; }, selectIt);
     } else { selectIt(); }
   });
 })();
