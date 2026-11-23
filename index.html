@@ -336,6 +336,23 @@ table.fee { width: 100%; min-width: 560px; border-collapse: collapse; font-size:
 .steps h3 { font-family: var(--font-serif-kr); font-weight: 700; font-size: 1.2rem; margin-top: 6px; }
 .steps p { color: var(--text-2); font-size: 15px; margin-top: 8px; }
 .sec-title { margin-bottom: 32px; }
+.fee.num td { font-variant-numeric: tabular-nums; }
+.fee.num td:nth-child(n+3) { color: var(--text); font-family: var(--font-serif-kr); font-weight: 700; }
+.note { font-size: 14px; color: var(--text-2); margin-top: 18px; max-width: 40em; }
+.h3 { font-family: var(--font-serif-kr); font-weight: 700; font-size: 1.25rem; margin-top: 48px; }
+.seat { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 24px 48px; align-items: center; margin-top: 28px; }
+.seat p { max-width: 34em; }
+.seat-n { display: flex; align-items: flex-end; gap: 10px; font-family: var(--font-serif-kr); font-size: 1.4rem; font-weight: 700; line-height: 1.2; }
+.seat-n .big { font-family: var(--font-serif-kr); font-weight: 900; font-size: 5.5rem; line-height: 0.85; font-variant-numeric: lining-nums; }
+.seat-n small { display: block; font-family: var(--font-sans-kr); font-weight: 400; font-size: 13px; color: var(--text-2); }
+.queue { list-style: none; padding: 0; margin: 20px 0 0; counter-reset: q; border-top: 1px solid var(--rule); }
+.queue li { counter-increment: q; display: grid; grid-template-columns: 2.2em minmax(0, 12em) minmax(0, 1fr); gap: 4px 16px; align-items: baseline; padding-block: 16px; border-bottom: 1px solid var(--rule); }
+.queue li::before { content: counter(q); font-family: var(--font-serif-kr); font-weight: 700; font-size: 1.1rem; color: var(--text-2); }
+.queue strong { font-family: var(--font-serif-kr); font-weight: 700; }
+.queue span { color: var(--text-2); font-size: 15px; }
+.steps.plain .card::before { content: none; }
+.info dd a { text-underline-offset: 3px; }
+@media (max-width: 820px) { .seat { grid-template-columns: minmax(0, 1fr); } .queue li { grid-template-columns: 2.2em minmax(0, 1fr); } .queue span { grid-column: 2; } }
 @media (max-width: 820px) {
   .cblock { grid-template-columns: minmax(0, 1fr); padding-block: 32px; }
   .gallery, .steps { grid-template-columns: minmax(0, 1fr); }
@@ -384,7 +401,7 @@ table.fee { width: 100%; min-width: 560px; border-collapse: collapse; font-size:
   <dl class="facts">
     <div class="wrap">
       <div><dt>위치</dt><dd>세종시 새롬중앙로 51<small>에스월드빌딩 305호</small></dd></div>
-      <div><dt>운영 시간</dt><dd>12:30 – 19:00</dd></div>
+      <div><dt>운영 시간</dt><dd>월–금 12:30 – 19:00</dd></div>
       <div><dt>상담 전화</dt><dd>044-863-5375</dd></div>
     </div>
   </dl>
@@ -456,7 +473,14 @@ table.fee { width: 100%; min-width: 560px; border-collapse: collapse; font-size:
         <li><strong>정기 발표회 · 연주회</strong><span>배운 곡을 무대에서 연주합니다.</span></li>
         <li><strong>학부모 정기 상담</strong><span>상담 주간을 두고 아이의 진도와 변화를 함께 살핍니다.</span></li>
       </ul>
-      <dl class="names" style="margin-top: 48px">
+      <div class="eyebrow" style="margin-top: 64px">A MONTH AT KLAVIER</div>
+      <h2 class="h2">한 달은 이렇게 흘러갑니다</h2>
+      <div class="steps plain" style="margin-top: 32px">
+        <div class="card"><div class="en">Lesson Note</div><h3>레슨일지</h3><p>매 수업 레슨일지를 씁니다. 한 달치를 묶어 가정으로 보내 드립니다.</p></div>
+        <div class="card"><div class="en">Étude · Encore</div><h3>이달의 클라비어</h3><p>매달 두 명을 뽑아 에튀드상과 앙코르상을 드립니다.</p></div>
+        <div class="card"><div class="en">Maestro</div><h3>원장 레슨</h3><p>원장 선생님이 모든 아이를 직접 레슨하는 시간을 정기적으로 둡니다.</p></div>
+      </div>
+      <dl class="names" style="margin-top: 64px">
         <div><dt>세종<span>Sejong</span></dt><dd>학원이 자리한 도시의 이름입니다.</dd></div>
         <div><dt>클라비어<span>Klavier</span></dt><dd>독일어로 건반악기를 뜻합니다.</dd></div>
       </dl>
@@ -482,8 +506,8 @@ table.fee { width: 100%; min-width: 560px; border-collapse: collapse; font-size:
       <a class="back" href="#top">← 메인으로</a>
       <div class="en">Courses &amp; Tuition</div>
       <h1>수강안내</h1>
-      <p class="lead">네 가지 과정과 수업료를 안내합니다.</p>
-      <div class="index"><button type="button" data-jump="c-private"><span class="n">01</span>피아노 개인 레슨</button><button type="button" data-jump="c-young"><span class="n">02</span>유아 · 초등 음악</button><button type="button" data-jump="c-audition"><span class="n">03</span>입시 · 콩쿠르 준비</button><button type="button" data-jump="c-adult"><span class="n">04</span>성인 클래스</button><button type="button" data-jump="fee"><span class="n">05</span>수업료</button></div>
+      <p class="lead">과정, 수업 운영 방식, 수업료를 안내합니다.</p>
+      <div class="index"><button type="button" data-jump="c-private"><span class="n">01</span>피아노 개인 레슨</button><button type="button" data-jump="c-young"><span class="n">02</span>유아 · 초등 음악</button><button type="button" data-jump="c-audition"><span class="n">03</span>입시 · 콩쿠르 준비</button><button type="button" data-jump="c-adult"><span class="n">04</span>성인 클래스</button><button type="button" data-jump="how"><span class="n">05</span>시간 정원제</button><button type="button" data-jump="fee"><span class="n">06</span>수업료</button></div>
     </div></div>
     <div class="sec"><div class="wrap">
       
@@ -504,14 +528,34 @@ table.fee { width: 100%; min-width: 560px; border-collapse: collapse; font-size:
         <ul class="points"><li><strong>맞춤 커리큘럼</strong><span>수준과 원하시는 곡에 맞춰 진행합니다.</span></li><li><strong>그랜드 피아노 레슨실</strong><span>그랜드 피아노로 레슨합니다.</span></li></ul>
       </div>
     </div></div>
+    <div class="sec sec-wall" id="how" style="scroll-margin-top: calc(var(--nav-h) + 16px)"><div class="wrap">
+      <div class="eyebrow">TIME &amp; SEATS</div>
+      <h2 class="h2">수업은 시간 정원제로 운영합니다</h2>
+      <div class="seat">
+        <div class="seat-n"><span class="big">10</span><span>명<small>한 시간 정원</small></span></div>
+        <p>한 시간에 아이들이 몰리면 선생님과 마주하는 시간이 줄어듭니다. 그래서 시간마다 정원을 정해 두었습니다. 수업은 월요일부터 금요일까지, 주 1회에서 4회 중 고르실 수 있습니다.</p>
+      </div>
+      <h3 class="h3">자리가 없을 때는 대기 명단 순서로 연락드립니다</h3>
+      <ol class="queue">
+        <li><strong>재원생의 시간 변경</strong><span>지금 다니는 아이가 시간을 옮길 때</span></li>
+        <li><strong>재원생의 형제</strong><span>다니는 아이의 동생 · 언니 · 오빠</span></li>
+        <li><strong>새로 오시는 분</strong><span>처음 등록하는 아이</span></li>
+      </ol>
+      <p class="note">같은 순서 안에서는 신청하신 날짜 순입니다.</p>
+    </div></div>
     <div class="sec sec-alt" id="fee" style="scroll-margin-top: calc(var(--nav-h) + 16px)"><div class="wrap">
       <div class="eyebrow">TUITION</div>
       <h2 class="h2">수업료</h2>
-      <p class="sub">수업료는 과정과 주당 횟수에 따라 다릅니다. 전화나 네이버 톡톡으로 문의해 주세요.</p>
-      <div class="tbl-wrap"><table class="fee">
-        <thead><tr><th scope="col">과정</th><th scope="col">대상</th><th scope="col">레슨 형태</th><th scope="col">수업료</th></tr></thead>
-        <tbody><tr><th scope="row">피아노 개인 레슨</th><td>전 연령</td><td>일대일</td><td>상담 문의</td></tr><tr><th scope="row">유아 · 초등 음악</th><td>유아 · 초등학생</td><td>상담 시 안내</td><td>상담 문의</td></tr><tr><th scope="row">입시 · 콩쿠르 준비</th><td>입시 · 콩쿠르 준비생</td><td>일대일</td><td>상담 문의</td></tr><tr><th scope="row">성인 클래스</th><td>성인</td><td>상담 시 안내</td><td>상담 문의</td></tr></tbody>
+      <p class="sub">월 수업료는 교재 단계와 주당 횟수로 정해집니다. 단위는 원입니다.</p>
+      <div class="tbl-wrap"><table class="fee num">
+        <thead><tr><th scope="col">단계</th><th scope="col">교재 기준</th><th scope="col">주 1회</th><th scope="col">주 2회</th><th scope="col">주 3회</th><th scope="col">주 4회</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">초급</th><td>바이엘</td><td>110,000</td><td>120,000</td><td>130,000</td><td>140,000</td></tr>
+          <tr><th scope="row">중급</th><td>체르니 100 · 30</td><td>120,000</td><td>130,000</td><td>140,000</td><td>150,000</td></tr>
+          <tr><th scope="row">고급</th><td>체르니 40 이상</td><td>130,000</td><td>140,000</td><td>150,000</td><td>160,000</td></tr>
+        </tbody>
       </table></div>
+      <p class="note">교재가 올라가면 단계가 바뀌고 수업료도 함께 바뀝니다. 과정별 세부 사항은 상담 때 안내해 드립니다.</p>
       <div class="actions"><a class="btn btn-primary" href="tel:0448635375">상담 전화 044-863-5375</a><a class="btn btn-ghost" href="https://talk.naver.com/wrlt8tl" target="_blank" rel="noopener">네이버 톡톡 상담</a></div>
     </div></div>
   </section>
@@ -560,13 +604,18 @@ table.fee { width: 100%; min-width: 560px; border-collapse: collapse; font-size:
       <div class="visit" style="margin-top: 56px">
         <dl class="info">
           <div><dt>전화</dt><dd>044-863-5375</dd></div>
-          <div><dt>운영 시간</dt><dd>12:30 – 19:00</dd></div>
+          <div><dt>운영 시간</dt><dd>월–금 12:30 – 19:00</dd></div>
           <div><dt>온라인 문의</dt><dd class="soft">네이버 톡톡으로 문의를 남기실 수 있습니다.</dd></div>
+          <div><dt>인스타그램</dt><dd class="soft"><a href="https://www.instagram.com/klavier_academy/" target="_blank" rel="noopener">@klavier_academy</a></dd></div>
         </dl>
-        <div class="actions" style="margin-top: 0"><a class="btn btn-primary" href="tel:0448635375">상담 전화 044-863-5375</a><a class="btn btn-ghost" href="https://talk.naver.com/wrlt8tl" target="_blank" rel="noopener">네이버 톡톡 상담</a></div>
+        <div>
+          <div class="actions" style="margin-top: 0"><a class="btn btn-primary" href="tel:0448635375">상담 전화 044-863-5375</a><a class="btn btn-ghost" href="https://talk.naver.com/wrlt8tl" target="_blank" rel="noopener">네이버 톡톡 상담</a></div>
+          <p class="note">수업 중에는 전화를 받기 어렵습니다. 톡톡으로 먼저 남겨 주시면 수업이 끝나는 대로 연락드립니다.</p>
+        </div>
       </div>
       <div class="faq">
-        <details><summary>수업료는 어떻게 되나요?</summary><p>과정과 주당 횟수에 따라 달라 상담 때 안내해 드립니다.</p></details>
+        <details><summary>수업료는 어떻게 되나요?</summary><p>교재 단계와 주당 횟수에 따라 월 110,000원부터 160,000원까지입니다. 수강안내의 수업료 표를 참고해 주세요.</p></details>
+        <details><summary>원하는 시간에 자리가 없으면 어떻게 하나요?</summary><p>대기 명단에 올려 드리고, 자리가 나는 대로 순서대로 연락드립니다.</p></details>
         <details><summary>피아노를 처음 배워도 되나요?</summary><p>네. 유아부터 성인까지 처음 시작하시는 분을 위한 과정이 있습니다.</p></details>
       </div>
     </div></div>
@@ -584,7 +633,7 @@ table.fee { width: 100%; min-width: 560px; border-collapse: collapse; font-size:
         <dl class="info">
           <div><dt>주소</dt><dd id="addr">세종시 새롬중앙로 51 에스월드빌딩 305호</dd></div>
           <div><dt>전화</dt><dd>044-863-5375</dd></div>
-          <div><dt>운영 시간</dt><dd>12:30 – 19:00</dd></div>
+          <div><dt>운영 시간</dt><dd>월–금 12:30 – 19:00</dd></div>
         </dl>
         <div>
           <div class="actions" style="margin-top: 0">
