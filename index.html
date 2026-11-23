@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="세종시 새롬동 세종 클라비어 음악학원. 피아노 개인 레슨, 유아·초등 음악, 입시·콩쿠르 준비, 성인 클래스. 상담 044-863-5375">
+<meta property="og:title" content="세종 클라비어 음악학원">
+<meta property="og:description" content="아이의 꿈을 음악으로 키웁니다. 세종시 새롬중앙로 51 에스월드빌딩 305호">
+<meta property="og:image" content="img/lobby.jpg">
+<meta property="og:type" content="website">
+<title>세종 클라비어 음악학원</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Noto+Sans+KR:wght@300;400;500&family=Noto+Serif+KR:wght@400;700;900&display=swap">
+<style>
+/* Layout: 사진이 먼저 말하고 글은 짧게 받친다. 돌빛(stone) 면과 실내 조명이 담긴 사진으로 온기를 만들고, 강조는 soft black 면과 굵기로만. */
+:root {
+  --bg: #FAF7F2;            /* warm-white */
+  --bg-alt: #F1EEE8;        /* stone-50 */
+  --wall: #E9E5DC;          /* stone — 실내 벽 */
+  --surface: #FFFFFF;
+  --rule: rgba(42, 40, 38, 0.22);
+  --text: #1C1917;          /* charcoal */
+  --text-2: #66615C;        /* stone-gray */
+  --accent: #2A2826;        /* soft-black */
+  --accent-hover: #4A4642;
+  --on-accent: #FAF7F2;
+  --band: #2A2826;
+  --band-text: #FAF7F2;
+  --band-text-2: #B9B7B2;   /* steel */
+  --band-rule: rgba(250, 247, 242, 0.18);
+  --key-white: #FFFFFF;
+  --key-white-down: #E9E5DC;
+  --key-black: #121110;
+  --key-black-down: #4A4642;
+  --key-edge: #B9B7B2;
+  --shadow-md: 0 2px 20px rgba(28, 25, 23, 0.08);
+  --shadow-lg: 0 8px 40px rgba(28, 25, 23, 0.14);
+
+  --font-wordmark: "Cinzel", "Cormorant Garamond", Georgia, serif;
+  --font-display: "Cormorant Garamond", "Noto Serif KR", Georgia, serif;
+  --font-serif-kr: "Noto Serif KR", "Cormorant Garamond", Georgia, serif;
+  --font-sans-kr: "Noto Sans KR", -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --max: 1120px;
+  --nav-h: 68px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #171514; --bg-alt: #1E1C1A; --wall: #262422; --surface: #24221F;
+    --rule: rgba(250, 247, 242, 0.20);
+    --text: #FAF7F2; --text-2: #B9B7B2;
+    --accent: #FAF7F2; --accent-hover: #D6D4CF; --on-accent: #1C1917;
+    --band: #2A2826; --band-text: #FAF7F2; --band-text-2: #B9B7B2;
+    --band-rule: rgba(250, 247, 242, 0.18);
+    --key-white: #E9E5DC; --key-white-down: #B9B7B2;
+    --key-black: #121110; --key-black-down: #4A4642; --key-edge: #66615C;
+    --shadow-md: 0 2px 20px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.45);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #171514; --bg-alt: #1E1C1A; --wall: #262422; --surface: #24221F;
+  --rule: rgba(250, 247, 242, 0.20);
+  --text: #FAF7F2; --text-2: #B9B7B2;
+  --accent: #FAF7F2; --accent-hover: #D6D4CF; --on-accent: #1C1917;
+  --band: #2A2826; --band-text: #FAF7F2; --band-text-2: #B9B7B2;
+  --band-rule: rgba(250, 247, 242, 0.18);
+  --key-white: #E9E5DC; --key-white-down: #B9B7B2;
+  --key-black: #121110; --key-black-down: #4A4642; --key-edge: #66615C;
+  --shadow-md: 0 2px 20px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: var(--font-sans-kr); font-size: 16px; font-weight: 300; line-height: 1.8;
+  word-break: keep-all; overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  z-index: 10; background: var(--bg);
+}
+h1, h2, h3, p, dl, dd, ul, figure, blockquote { margin: 0; }
+ul { padding: 0; list-style: none; }
+a { color: inherit; }
+img { display: block; max-width: 100%; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.wrap {
+  max-width: var(--max); margin-inline: auto;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+.eyebrow {
+  font-family: var(--font-wordmark); font-size: 12px; font-weight: 500;
+  letter-spacing: 0.26em; color: var(--text-2);
+}
+.h2 {
+  font-family: var(--font-serif-kr); font-weight: 700;
+  font-size: clamp(1.6rem, 3.4vw, 2.25rem); line-height: 1.35; margin-top: 10px; text-wrap: balance;
+}
+.sub { color: var(--text-2); margin-top: 12px; max-width: 32em; }
+.photo { position: relative; overflow: hidden; background: var(--wall); box-shadow: var(--shadow-lg); }
+.photo img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ── 머리글 ── */
+.site-head {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9;
+  background: var(--bg); border-bottom: 1px solid var(--rule);
+}
+.site-head .wrap {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px 20px;
+  min-height: var(--nav-h); flex-wrap: wrap; padding-block: 10px;
+}
+.logo { display: block; color: var(--text); line-height: 0; }
+.logo svg { height: 34px; width: auto; display: block; }
+.nav { display: flex; align-items: center; gap: 4px 24px; flex-wrap: wrap; }
+.nav a {
+  font-size: 14px; font-weight: 400; letter-spacing: 0.04em; text-decoration: none;
+  padding-block: 6px; border-bottom: 1px solid transparent; transition: border-color 300ms var(--ease);
+}
+.nav a:hover { border-bottom-color: var(--text); }
+.nav a.call {
+  background: var(--accent); color: var(--on-accent); padding: 7px 16px; border-radius: 2px; border: 0;
+  font-weight: 500; font-variant-numeric: tabular-nums; transition: background 300ms var(--ease);
+}
+.nav a.call:hover { background: var(--accent-hover); }
+
+/* ── 히어로 ── */
+.hero { background: var(--wall); }
+.hero .wrap {
+  display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 48px; align-items: center; padding-block: 72px;
+}
+.hero h1 {
+  font-family: var(--font-serif-kr); font-weight: 900;
+  font-size: clamp(2.2rem, 5vw, 3.5rem); line-height: 1.3; letter-spacing: -0.01em;
+  margin-top: 18px; text-wrap: balance;
+}
+.hero .lede { font-size: 1.0625rem; color: var(--text-2); margin-top: 20px; max-width: 26em; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+.btn {
+  display: inline-block; font-size: 15px; font-weight: 500; letter-spacing: 0.06em;
+  padding: 14px 28px; border-radius: 2px; text-decoration: none; border: 1px solid var(--accent);
+  font-variant-numeric: tabular-nums; cursor: pointer; font-family: inherit;
+  transition: background 300ms var(--ease), transform 300ms var(--ease), border-color 300ms var(--ease);
+}
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); transform: translateY(-1px); }
+.btn-ghost { background: transparent; color: var(--text); border-color: var(--rule); }
+.btn-ghost:hover { border-color: var(--text); transform: translateY(-1px); }
+.hero .photo { aspect-ratio: 4 / 3; }
+.hero figcaption, .cap {
+  font-family: var(--font-display); font-style: italic; font-size: 15px; color: var(--text-2); margin-top: 12px;
+}
+
+/* 한눈에 보는 정보 */
+.facts { background: var(--band); color: var(--band-text); }
+.facts .wrap { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.facts .wrap > div { padding: 26px 28px; border-left: 1px solid var(--band-rule); }
+.facts .wrap > div:first-child { border-left: 0; padding-left: 0; }
+.facts dt { font-size: 12px; font-weight: 500; letter-spacing: 0.14em; color: var(--band-text-2); }
+.facts dd { font-family: var(--font-serif-kr); font-size: 1.125rem; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.facts dd small { display: block; font-family: var(--font-sans-kr); font-size: 13px; font-weight: 300; color: var(--band-text-2); }
+
+/* ── 섹션 공통 ── */
+.sec .wrap { padding-block: 92px; }
+.sec-alt { background: var(--bg-alt); }
+.sec-wall { background: var(--wall); }
+
+/* ── 과정 ── */
+.courses { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin-top: 44px; }
+.course {
+  background: var(--surface); border-radius: 4px; box-shadow: var(--shadow-md); padding: 28px 24px 30px;
+  transition: transform 300ms var(--ease), box-shadow 300ms var(--ease);
+}
+.course:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+.course .en { font-family: var(--font-display); font-style: italic; font-size: 15px; color: var(--text-2); }
+.course h3 { font-family: var(--font-serif-kr); font-weight: 700; font-size: 1.3rem; line-height: 1.4; margin-top: 4px; }
+.course p { color: var(--text-2); font-size: 15px; margin-top: 12px; line-height: 1.7; }
+
+/* ── 레슨 방식 ── */
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: center; }
+.split .photo { aspect-ratio: 5 / 4; }
+.points { margin-top: 32px; border-top: 1px solid var(--rule); }
+.points li { display: grid; grid-template-columns: minmax(0, 11em) minmax(0, 1fr); gap: 4px 20px; padding-block: 18px; border-bottom: 1px solid var(--rule); align-items: baseline; }
+.points strong { font-family: var(--font-serif-kr); font-weight: 700; font-size: 1.0625rem; }
+.points span { color: var(--text-2); font-size: 15px; }
+
+/* ── 건반 ── */
+.band { background: var(--band); color: var(--band-text); }
+.band .wrap { padding-block: 72px; display: grid; gap: 32px; justify-items: center; text-align: center; }
+.band h2 { font-family: var(--font-serif-kr); font-weight: 700; font-size: clamp(1.4rem, 3vw, 1.9rem); line-height: 1.5; text-wrap: balance; }
+.band .hint { font-size: 14px; color: var(--band-text-2); margin-top: 6px; }
+.keys {
+  position: relative; display: flex; width: min(100%, 600px);
+  aspect-ratio: 16 / 7; max-width: 100%; user-select: none; -webkit-user-select: none; touch-action: manipulation;
+}
+.key { font: inherit; cursor: pointer; padding: 0; margin: 0; -webkit-tap-highlight-color: transparent; }
+.key.w {
+  flex: 1 1 0; min-width: 0; background: var(--key-white); border: 1px solid var(--key-edge); border-left-width: 0;
+  border-radius: 0 0 2px 2px; display: flex; align-items: flex-end; justify-content: center;
+  padding-bottom: 12px; color: #66615C; font-size: 13px; font-weight: 400; transition: background 150ms var(--ease);
+}
+.key.w:first-child { border-left-width: 1px; }
+.key.b {
+  position: absolute; top: 0; width: 7.5%; height: 60%; background: var(--key-black);
+  border: 1px solid var(--key-black); border-top: 0; border-radius: 0 0 2px 2px; z-index: 2; transition: background 150ms var(--ease);
+}
+.key.w.down { background: var(--key-white-down); }
+.key.b.down { background: var(--key-black-down); }
+.key:focus-visible { outline: 2px solid var(--band-text-2); outline-offset: -4px; z-index: 3; }
+
+/* ── 인사말 ── */
+.letter blockquote p {
+  font-family: var(--font-serif-kr); font-size: clamp(1.15rem, 2.2vw, 1.4rem); line-height: 1.8; text-wrap: pretty;
+}
+.letter blockquote p + p { margin-top: 1em; }
+.letter cite { display: block; font-style: normal; font-size: 14px; color: var(--text-2); margin-top: 22px; }
+.letter .photo { aspect-ratio: 4 / 3; }
+
+/* ── 리뉴얼 안내 ── */
+.notice { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px 48px; align-items: center; }
+.notice .dates { font-family: var(--font-display); font-size: clamp(1.5rem, 3.2vw, 2.1rem); font-variant-numeric: tabular-nums; line-height: 1.2; white-space: nowrap; }
+.notice .dates small { display: block; font-family: var(--font-sans-kr); font-size: 12px; font-weight: 500; letter-spacing: 0.14em; color: var(--text-2); margin-bottom: 6px; }
+
+/* ── 오시는 길 ── */
+.visit { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px 56px; align-items: start; }
+.info { border-top: 1px solid var(--rule); }
+.info > div { display: grid; grid-template-columns: minmax(0, 6.5em) minmax(0, 1fr); gap: 4px 20px; padding-block: 18px; border-bottom: 1px solid var(--rule); align-items: baseline; }
+.info dt { font-size: 12px; font-weight: 500; letter-spacing: 0.14em; color: var(--text-2); }
+.info dd { font-family: var(--font-serif-kr); font-size: 1.0625rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.info dd small { display: block; font-family: var(--font-sans-kr); font-weight: 300; font-size: 14px; color: var(--text-2); }
+.copied { font-size: 13px; color: var(--text-2); align-self: center; min-height: 1.4em; }
+
+/* ── 바닥글 ── */
+.site-foot { background: var(--band); color: var(--band-text-2); font-size: 13px; }
+.site-foot .wrap { display: flex; flex-wrap: wrap; gap: 16px 40px; align-items: center; justify-content: space-between; padding-block: 40px; }
+.site-foot .logo { color: var(--band-text); }
+.site-foot .kr { font-family: var(--font-serif-kr); font-weight: 900; font-size: 1rem; color: var(--band-text); }
+.site-foot .id { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+
+section[id] { scroll-margin-top: calc(var(--nav-h) + env(safe-area-inset-top, 0px) + 8px); }
+
+@media (max-width: 900px) {
+  .courses { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 820px) {
+  .hero .wrap { grid-template-columns: minmax(0, 1fr); padding-block: 36px 48px; gap: 32px; }
+  .hero figure { order: -1; }
+  .sec .wrap { padding-block: 60px; }
+  .split, .visit { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+  .notice { grid-template-columns: minmax(0, 1fr); }
+  .facts .wrap { grid-template-columns: minmax(0, 1fr); }
+  .facts .wrap > div { border-left: 0; border-top: 1px solid var(--band-rule); padding: 18px 0; }
+  .facts .wrap > div:first-child { border-top: 0; }
+  .band .wrap { padding-block: 56px; }
+}
+@media (max-width: 520px) {
+  .courses { grid-template-columns: minmax(0, 1fr); }
+  .points li { grid-template-columns: minmax(0, 1fr); }
+  .nav { gap: 2px 16px; }
+  .nav a { font-size: 13px; }
+  .key.w { font-size: 11px; padding-bottom: 8px; }
+  .notice .dates { white-space: normal; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .btn, .key, .nav a, .course { transition: none; }
+  .btn:hover, .course:hover { transform: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="logo" href="#top" aria-label="세종 클라비어 음악학원 — 처음으로"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2753 560"><g transform="translate(120.0 120.0) scale(0.45714)"><path d="M442.0 25.9 L511.4 419.6 L478.7 425.4 L514.8 700.0 L639.9 700.0 L549.3 11.8 L442.0 25.9 Z M435.8 432.9 L403.1 438.7 L333.6 45.0 L243.4 65.0 L346.8 451.2 L314.7 459.8 L368.0 700.0 L495.0 700.0 L435.8 432.9 Z M272.7 471.1 L240.6 479.7 L137.1 93.5 L33.9 126.0 L214.8 700.0 L344.9 700.0 L272.7 471.1 Z M1547.4 126.0 L1429.1 88.7 L1236.4 700.0 L1366.4 700.0 L1547.4 126.0 Z M1353.3 68.4 L1247.6 45.0 L1178.2 438.7 L1145.5 432.9 L1086.3 700.0 L1213.3 700.0 L1353.3 68.4 Z M1102.6 425.4 L1069.9 419.6 L1139.3 25.9 L1047.6 13.8 L1012.8 412.1 L979.7 409.2 L941.4 700.0 L1066.4 700.0 L1102.6 425.4 Z M936.3 405.4 L903.2 402.5 L938.0 4.2 L845.6 0.2 L845.6 400.0 L812.4 400.0 L799.3 700.0 L923.4 700.0 L936.3 405.4 Z M768.9 400.0 L735.6 400.0 L735.6 0.2 L627.5 4.9 L657.8 700.0 L782.0 700.0 L768.9 400.0 Z" fill="currentColor" fill-rule="evenodd"></path></g><path transform="translate(962.87 380.00) scale(0.28571 -0.28571)" d="M119 73V627Q118 653 99.5 671.5Q81 690 55 690H42V700H346V690H333Q307 690 288.5 671.5Q270 653 269 627V73Q270 47 288.5 28.5Q307 10 333 10H346V0H42V10H55Q81 10 99.5 28.5Q118 47 119 73ZM734 700V691H730Q697 691 668 678Q645 667 627 649L427 412L675 72Q698 42 722.0 26.5Q746 11 777 10V0H695Q684 0 658.5 1.0Q633 2 601.0 9.0Q569 16 536.5 33.5Q504 51 480 83Q475 90 460.0 110.0Q445 130 425.0 158.0Q405 186 383.5 215.5Q362 245 343 271L313 313L301 330L539 644Q551 661 543.0 676.0Q535 691 515 691H505V700Z" fill="currentColor"></path><path transform="translate(1239.15 380.00) scale(0.28571 -0.28571)" d="M606 204 560 0H42V10H55Q81 10 99.5 28.5Q118 47 119 73V627Q118 653 99.5 671.5Q81 690 55 690H42V700H346V690H333Q307 690 288.5 671.5Q270 653 269 627V43H400Q450 43 488.0 62.5Q526 82 553.0 118.5Q580 155 596 204Z" fill="currentColor"></path><path transform="translate(1475.44 380.00) scale(0.28571 -0.28571)" d="M354 720 654 65Q669 37 690 25Q714 10 737 10H745V0H427V10H436Q456 10 471.0 26.5Q486 43 474 73H475L426 196H190L139 73Q131 53 136.0 39.0Q141 25 153.0 17.5Q165 10 177 10H186V0H-28V10H-19Q4 10 28 25Q48 36 63 62L296 589Q299 595 306.5 611.5Q314 628 322.5 649.0Q331 670 338.0 689.5Q345 709 345 720ZM310 485 208 238H409Z" fill="currentColor"></path><path transform="translate(1740.30 380.00) scale(0.28571 -0.28571)" d="M368 -20 68 627Q52 661 27.5 675.5Q3 690 -20 690H-28V700H290V690H281Q262 690 247.5 673.5Q233 657 244 627H243L412 214L589 627Q602 657 586.0 673.5Q570 690 551 690H542V700H756V690H747Q725 690 700.5 675.5Q676 661 660 627L426 111Q424 105 416.5 88.5Q409 72 400.0 51.0Q391 30 384.5 10.5Q378 -9 377 -20Z" fill="currentColor"></path><path transform="translate(2008.30 380.00) scale(0.28571 -0.28571)" d="M119 73V627Q118 653 99.5 671.5Q81 690 55 690H42V700H346V690H333Q307 690 288.5 671.5Q270 653 269 627V73Q270 47 288.5 28.5Q307 10 333 10H346V0H42V10H55Q81 10 99.5 28.5Q118 47 119 73Z" fill="currentColor"></path><path transform="translate(2178.87 380.00) scale(0.28571 -0.28571)" d="M606 204 560 0H42V10H55Q81 10 99.5 28.5Q118 47 119 73V627Q118 653 99.5 671.5Q81 690 55 690H42V700H423Q445 700 469.5 703.0Q494 706 515.0 710.0Q536 714 545 718V543H535V555Q535 601 508 629Q485 652 448 657H269V366H401Q438 367 462.0 391.5Q486 416 486 452V460H496V230H486V239Q486 275 462.0 299.0Q438 323 401 324H269V43H400Q450 43 488.0 62.5Q526 82 553.0 118.5Q580 155 596 204Z" fill="currentColor"></path><path transform="translate(2419.44 380.00) scale(0.28571 -0.28571)" d="M122 73V627Q121 653 102.5 671.5Q84 690 58 690H45V700H388Q433 700 476.0 690.0Q519 680 552.5 658.0Q586 636 606.0 600.0Q626 564 626 511Q626 469 608.5 427.5Q591 386 555.0 356.5Q519 327 462 321Q494 311 520.5 285.0Q547 259 564 233Q565 231 575.5 215.0Q586 199 601.5 175.5Q617 152 634.0 128.0Q651 104 665 86Q687 59 705.0 42.5Q723 26 743.0 18.5Q763 11 789 10V0H691Q637 0 593.0 10.0Q549 20 515.0 42.5Q481 65 456 104Q448 116 438.5 134.5Q429 153 419.0 174.0Q409 195 399.5 214.5Q390 234 383.0 250.0Q376 266 373 275Q360 307 342.5 323.0Q325 339 305 342V352Q308 352 317.0 352.0Q326 352 336 352Q363 352 388.5 363.0Q414 374 434.0 399.0Q454 424 462 468Q464 477 465.5 489.0Q467 501 466 516Q463 588 430.0 621.5Q397 655 348 656Q334 657 317.5 656.5Q301 656 288 656H272V73Q272 47 291.0 28.5Q310 10 336 10H348V0H45V10H58Q84 10 102.5 28.5Q121 47 122 73Z" fill="currentColor"></path></svg></a>
+    <nav class="nav" aria-label="주요 메뉴">
+      <a href="#courses">과정</a>
+      <a href="#lesson">레슨</a>
+      <a href="#visit">오시는 길</a>
+      <a class="call" href="tel:0448635375">044-863-5375</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow">SEJONG · EST. 2017</div>
+        <h1>아이의 꿈을 음악으로 키웁니다</h1>
+        <p class="lede">세종시 새롬동에서 여덟 해째, 그랜드 피아노가 있는 음악학원입니다.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="tel:0448635375">상담 전화 044-863-5375</a>
+          <a class="btn btn-ghost" href="#visit">오시는 길</a>
+        </div>
+      </div>
+      <figure>
+        <div class="photo"><img src="img/lobby.jpg" width="731" height="558" alt="대리석 바닥 로비에 놓인 검은 그랜드 피아노와 레슨실 입구"></div>
+        <figcaption>로비의 그랜드 피아노</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <dl class="facts">
+    <div class="wrap">
+      <div><dt>위치</dt><dd>세종시 새롬중앙로 51<small>에스월드빌딩 305호</small></dd></div>
+      <div><dt>운영 시간</dt><dd>12:30 – 19:00</dd></div>
+      <div><dt>상담 전화</dt><dd>044-863-5375</dd></div>
+    </div>
+  </dl>
+
+  <section class="sec" id="courses">
+    <div class="wrap">
+      <div class="eyebrow">COURSES</div>
+      <h2 class="h2">배우실 수 있는 과정</h2>
+      <div class="courses">
+        <div class="course">
+          <div class="en">Private Piano</div>
+          <h3>피아노 개인 레슨</h3>
+          <p>한 사람에게 맞춘 일대일 레슨입니다.</p>
+        </div>
+        <div class="course">
+          <div class="en">Young Musicians</div>
+          <h3>유아 · 초등 음악</h3>
+          <p>처음 음악을 만나는 아이들을 위한 과정입니다.</p>
+        </div>
+        <div class="course">
+          <div class="en">Audition &amp; Competition</div>
+          <h3>입시 · 콩쿠르 준비</h3>
+          <p>목표한 무대에 맞춰 곡을 준비합니다.</p>
+        </div>
+        <div class="course">
+          <div class="en">Adult Class</div>
+          <h3>성인 클래스</h3>
+          <p>처음 배우시는 분도, 다시 시작하시는 분도 환영합니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec sec-alt" id="lesson">
+    <div class="wrap split">
+      <div class="photo"><img src="img/hall.jpg" width="749" height="573" loading="lazy" alt="벽등이 켜진 복도와 세종 클라비어 음악학원 유리문 입구"></div>
+      <div>
+        <div class="eyebrow">LESSONS</div>
+        <h2 class="h2">세종 클라비어의 레슨</h2>
+        <ul class="points">
+          <li><strong>일대일 맞춤 커리큘럼</strong><span>수준과 목표에 맞춰 진도를 정합니다.</span></li>
+          <li><strong>그랜드 피아노 레슨실</strong><span>그랜드 피아노로 레슨합니다.</span></li>
+          <li><strong>정기 발표회 · 연주회</strong><span>배운 곡을 무대에서 연주합니다.</span></li>
+          <li><strong>학부모 정기 상담</strong><span>아이의 진도와 변화를 함께 살핍니다.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="keys-title">
+    <div class="wrap">
+      <div>
+        <h2 id="keys-title">먼저 한 음 눌러 보세요</h2>
+        <p class="hint">건반을 누르면 소리가 납니다.</p>
+      </div>
+      <div class="keys" id="keys" role="group" aria-label="한 옥타브 건반">
+        <button class="key w" type="button" data-f="261.63" aria-label="도">도</button>
+        <button class="key b" type="button" data-f="277.18" aria-label="도 샤프" style="left: 8.75%"></button>
+        <button class="key w" type="button" data-f="293.66" aria-label="레">레</button>
+        <button class="key b" type="button" data-f="311.13" aria-label="레 샤프" style="left: 21.25%"></button>
+        <button class="key w" type="button" data-f="329.63" aria-label="미">미</button>
+        <button class="key w" type="button" data-f="349.23" aria-label="파">파</button>
+        <button class="key b" type="button" data-f="369.99" aria-label="파 샤프" style="left: 46.25%"></button>
+        <button class="key w" type="button" data-f="392.00" aria-label="솔">솔</button>
+        <button class="key b" type="button" data-f="415.30" aria-label="솔 샤프" style="left: 58.75%"></button>
+        <button class="key w" type="button" data-f="440.00" aria-label="라">라</button>
+        <button class="key b" type="button" data-f="466.16" aria-label="라 샤프" style="left: 71.25%"></button>
+        <button class="key w" type="button" data-f="493.88" aria-label="시">시</button>
+        <button class="key w" type="button" data-f="523.25" aria-label="높은 도">도</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec sec-wall letter">
+    <div class="wrap split">
+      <blockquote>
+        <div class="eyebrow">8TH ANNIVERSARY</div>
+        <h2 class="h2" style="margin-bottom: 26px">여덟 해, 감사의 마음을 전합니다</h2>
+        <p>8년 전, 세종 클라비어 음악학원을 시작하면서 가장 큰 목표는 아이들에게 음악의 즐거움과 예술적 감성을 전하는 것이었습니다.</p>
+        <p>아이들의 미소와 작은 성취가 저희 학원의 가장 큰 원동력이 되었습니다.</p>
+        <cite>8주년 인사말 중에서</cite>
+      </blockquote>
+      <div class="photo"><img src="img/sign.jpg" width="750" height="564" loading="lazy" alt="세종 클라비어 음악학원, SEJONG KLAVIER MUSIK SCHULE 라고 적힌 입구 간판"></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap notice">
+      <div>
+        <div class="eyebrow">RENEWAL</div>
+        <h2 class="h2">2027년, 새 공간으로 단장합니다</h2>
+        <p class="sub">돌빛 벽과 부드러운 조명으로 실내를 새로 꾸밉니다. 로비의 그랜드 피아노는 그 자리에 있습니다.</p>
+      </div>
+      <div class="dates"><small>공사 기간</small>2026. 12. 26 – 2027. 1. 3</div>
+    </div>
+  </section>
+
+  <section class="sec sec-alt" id="visit">
+    <div class="wrap visit">
+      <div>
+        <div class="eyebrow">VISIT</div>
+        <h2 class="h2">오시는 길 · 상담</h2>
+        <p class="sub">전화로 상담 시간을 잡으신 뒤 방문해 주세요. 아이와 함께 오셔서 피아노를 직접 쳐 보셔도 좋습니다.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="https://map.naver.com/p/search/%EC%84%B8%EC%A2%85%20%ED%81%B4%EB%9D%BC%EB%B9%84%EC%96%B4%20%EC%9D%8C%EC%95%85%ED%95%99%EC%9B%90" target="_blank" rel="noopener">네이버 지도에서 보기</a>
+          <button class="btn btn-ghost" type="button" id="copy-addr">주소 복사</button>
+          <span class="copied" id="copied" role="status"></span>
+        </div>
+      </div>
+      <dl class="info">
+        <div><dt>주소</dt><dd id="addr">세종시 새롬중앙로 51 에스월드빌딩 305호</dd></div>
+        <div><dt>전화</dt><dd>044-863-5375</dd></div>
+        <div><dt>운영 시간</dt><dd>12:30 – 19:00</dd></div>
+      </dl>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="id">
+      <span class="logo"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2753 560"><g transform="translate(120.0 120.0) scale(0.45714)"><path d="M442.0 25.9 L511.4 419.6 L478.7 425.4 L514.8 700.0 L639.9 700.0 L549.3 11.8 L442.0 25.9 Z M435.8 432.9 L403.1 438.7 L333.6 45.0 L243.4 65.0 L346.8 451.2 L314.7 459.8 L368.0 700.0 L495.0 700.0 L435.8 432.9 Z M272.7 471.1 L240.6 479.7 L137.1 93.5 L33.9 126.0 L214.8 700.0 L344.9 700.0 L272.7 471.1 Z M1547.4 126.0 L1429.1 88.7 L1236.4 700.0 L1366.4 700.0 L1547.4 126.0 Z M1353.3 68.4 L1247.6 45.0 L1178.2 438.7 L1145.5 432.9 L1086.3 700.0 L1213.3 700.0 L1353.3 68.4 Z M1102.6 425.4 L1069.9 419.6 L1139.3 25.9 L1047.6 13.8 L1012.8 412.1 L979.7 409.2 L941.4 700.0 L1066.4 700.0 L1102.6 425.4 Z M936.3 405.4 L903.2 402.5 L938.0 4.2 L845.6 0.2 L845.6 400.0 L812.4 400.0 L799.3 700.0 L923.4 700.0 L936.3 405.4 Z M768.9 400.0 L735.6 400.0 L735.6 0.2 L627.5 4.9 L657.8 700.0 L782.0 700.0 L768.9 400.0 Z" fill="currentColor" fill-rule="evenodd"></path></g><path transform="translate(962.87 380.00) scale(0.28571 -0.28571)" d="M119 73V627Q118 653 99.5 671.5Q81 690 55 690H42V700H346V690H333Q307 690 288.5 671.5Q270 653 269 627V73Q270 47 288.5 28.5Q307 10 333 10H346V0H42V10H55Q81 10 99.5 28.5Q118 47 119 73ZM734 700V691H730Q697 691 668 678Q645 667 627 649L427 412L675 72Q698 42 722.0 26.5Q746 11 777 10V0H695Q684 0 658.5 1.0Q633 2 601.0 9.0Q569 16 536.5 33.5Q504 51 480 83Q475 90 460.0 110.0Q445 130 425.0 158.0Q405 186 383.5 215.5Q362 245 343 271L313 313L301 330L539 644Q551 661 543.0 676.0Q535 691 515 691H505V700Z" fill="currentColor"></path><path transform="translate(1239.15 380.00) scale(0.28571 -0.28571)" d="M606 204 560 0H42V10H55Q81 10 99.5 28.5Q118 47 119 73V627Q118 653 99.5 671.5Q81 690 55 690H42V700H346V690H333Q307 690 288.5 671.5Q270 653 269 627V43H400Q450 43 488.0 62.5Q526 82 553.0 118.5Q580 155 596 204Z" fill="currentColor"></path><path transform="translate(1475.44 380.00) scale(0.28571 -0.28571)" d="M354 720 654 65Q669 37 690 25Q714 10 737 10H745V0H427V10H436Q456 10 471.0 26.5Q486 43 474 73H475L426 196H190L139 73Q131 53 136.0 39.0Q141 25 153.0 17.5Q165 10 177 10H186V0H-28V10H-19Q4 10 28 25Q48 36 63 62L296 589Q299 595 306.5 611.5Q314 628 322.5 649.0Q331 670 338.0 689.5Q345 709 345 720ZM310 485 208 238H409Z" fill="currentColor"></path><path transform="translate(1740.30 380.00) scale(0.28571 -0.28571)" d="M368 -20 68 627Q52 661 27.5 675.5Q3 690 -20 690H-28V700H290V690H281Q262 690 247.5 673.5Q233 657 244 627H243L412 214L589 627Q602 657 586.0 673.5Q570 690 551 690H542V700H756V690H747Q725 690 700.5 675.5Q676 661 660 627L426 111Q424 105 416.5 88.5Q409 72 400.0 51.0Q391 30 384.5 10.5Q378 -9 377 -20Z" fill="currentColor"></path><path transform="translate(2008.30 380.00) scale(0.28571 -0.28571)" d="M119 73V627Q118 653 99.5 671.5Q81 690 55 690H42V700H346V690H333Q307 690 288.5 671.5Q270 653 269 627V73Q270 47 288.5 28.5Q307 10 333 10H346V0H42V10H55Q81 10 99.5 28.5Q118 47 119 73Z" fill="currentColor"></path><path transform="translate(2178.87 380.00) scale(0.28571 -0.28571)" d="M606 204 560 0H42V10H55Q81 10 99.5 28.5Q118 47 119 73V627Q118 653 99.5 671.5Q81 690 55 690H42V700H423Q445 700 469.5 703.0Q494 706 515.0 710.0Q536 714 545 718V543H535V555Q535 601 508 629Q485 652 448 657H269V366H401Q438 367 462.0 391.5Q486 416 486 452V460H496V230H486V239Q486 275 462.0 299.0Q438 323 401 324H269V43H400Q450 43 488.0 62.5Q526 82 553.0 118.5Q580 155 596 204Z" fill="currentColor"></path><path transform="translate(2419.44 380.00) scale(0.28571 -0.28571)" d="M122 73V627Q121 653 102.5 671.5Q84 690 58 690H45V700H388Q433 700 476.0 690.0Q519 680 552.5 658.0Q586 636 606.0 600.0Q626 564 626 511Q626 469 608.5 427.5Q591 386 555.0 356.5Q519 327 462 321Q494 311 520.5 285.0Q547 259 564 233Q565 231 575.5 215.0Q586 199 601.5 175.5Q617 152 634.0 128.0Q651 104 665 86Q687 59 705.0 42.5Q723 26 743.0 18.5Q763 11 789 10V0H691Q637 0 593.0 10.0Q549 20 515.0 42.5Q481 65 456 104Q448 116 438.5 134.5Q429 153 419.0 174.0Q409 195 399.5 214.5Q390 234 383.0 250.0Q376 266 373 275Q360 307 342.5 323.0Q325 339 305 342V352Q308 352 317.0 352.0Q326 352 336 352Q363 352 388.5 363.0Q414 374 434.0 399.0Q454 424 462 468Q464 477 465.5 489.0Q467 501 466 516Q463 588 430.0 621.5Q397 655 348 656Q334 657 317.5 656.5Q301 656 288 656H272V73Q272 47 291.0 28.5Q310 10 336 10H348V0H45V10H58Q84 10 102.5 28.5Q121 47 122 73Z" fill="currentColor"></path></svg></span>
+      <span class="kr">세종 클라비어 음악학원</span>
+    </div>
+    <div>세종시 새롬중앙로 51 에스월드빌딩 305호 · 044-863-5375</div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var ctx = null;
+  function sound(freq) {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    try {
+      ctx = ctx || new AC();
+      if (ctx.state === "suspended") ctx.resume();
+      var t = ctx.currentTime;
+      var out = ctx.createGain();
+      out.gain.setValueAtTime(0.0001, t);
+      out.gain.exponentialRampToValueAtTime(0.26, t + 0.012);
+      out.gain.exponentialRampToValueAtTime(0.0001, t + 1.8);
+      out.connect(ctx.destination);
+      [[1, "triangle", 1], [2, "sine", 0.22], [3, "sine", 0.07]].forEach(function (p) {
+        var o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = p[1]; o.frequency.value = freq * p[0]; g.gain.value = p[2];
+        o.connect(g); g.connect(out); o.start(t); o.stop(t + 1.85);
+      });
+    } catch (e) { /* 소리를 낼 수 없는 환경에서는 눌림 표시만 남깁니다 */ }
+  }
+  function press(key) {
+    sound(parseFloat(key.dataset.f));
+    key.classList.add("down");
+    setTimeout(function () { key.classList.remove("down"); }, 180);
+  }
+  var keys = document.getElementById("keys");
+  keys.addEventListener("pointerdown", function (e) {
+    var k = e.target.closest(".key");
+    if (k) press(k);
+  });
+  keys.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    var k = e.target.closest(".key");
+    if (k && !e.repeat) { e.preventDefault(); press(k); }
+  });
+
+  var addr = document.getElementById("addr"), note = document.getElementById("copied");
+  document.getElementById("copy-addr").addEventListener("click", function () {
+    function selectIt() {
+      var r = document.createRange(); r.selectNodeContents(addr);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      note.textContent = "주소를 선택했습니다. 복사해 주세요.";
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(addr.textContent).then(function () {
+        note.textContent = "주소를 복사했습니다.";
+      }, selectIt);
+    } else { selectIt(); }
+  });
+})();
+</script>
+</body>
+</html>
