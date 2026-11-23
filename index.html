@@ -435,6 +435,10 @@ main > section[id], main > div[id], main [id="flow"], main [id="books"], main [i
 .care li:last-child { border-bottom: 0; padding-bottom: 0; }
 @media (max-width: 820px) { .care { grid-template-columns: minmax(0, 1fr); } }
 
+.heritage { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 32px 64px; align-items: end; }
+.heritage .stat { margin-top: 0; }
+@media (max-width: 820px) { .heritage { grid-template-columns: minmax(0, 1fr); } }
+
 .flow li.on strong::after { content: " · 선생님 앞"; }
 
 .pairs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 56px; margin-top: 32px; border-top: 1px solid var(--rule); }
@@ -495,6 +499,20 @@ main > section[id], main > div[id], main [id="flow"], main [id="books"], main [i
       <div><dt>상담 전화</dt><dd>010-4488-4763</dd></div>
     </div>
   </dl>
+  <section class="sec sec-wall" id="heritage">
+    <div class="wrap heritage">
+      <div>
+        <div class="eyebrow">SINCE 2017</div>
+        <h2 class="h2">같은 자리에서, 열 번째 해</h2>
+        <p class="sub">2017년 새롬동에 문을 연 뒤로 한 번도 자리를 옮기지 않았습니다. 한자리를 지킬 수 있었던 건, 믿고 맡겨 주신 마음 덕분입니다.</p>
+      </div>
+      <dl class="stat">
+        <div><dt>개원</dt><dd>2017<small>년</small></dd><dd class="d">세종시 새롬동, 지금 이 자리</dd></div>
+        <div><dt>올해</dt><dd>10<small>번째 해</small></dd><dd class="d">같은 원장이 같은 자리에서</dd></div>
+        <div><dt>아이들이 다니는 기간</dt><dd>5<small>년 넘게</small></dd><dd class="d">평균 재원 기간</dd></div>
+      </dl>
+    </div>
+  </section>
   <section class="sec">
     <div class="wrap">
       <div class="eyebrow">WHY KLAVIER</div>
