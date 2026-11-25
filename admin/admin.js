@@ -474,7 +474,7 @@
   function kstText(msv, sec) { return msv ? new Date(msv + 9 * 36e5).toISOString().slice(5, sec ? 19 : 16).replace("T", " ") : ""; }
   function fromKst(v) { return v ? firebase.firestore.Timestamp.fromDate(new Date(v + ":00+09:00")) : null; }
   function surveyState() {
-    if (!survey || !survey.round) return { key: "none", text: "회차 없음" };
+    if (!survey || !survey.round) return { key: "none", text: "만든 조사 없음" };
     var t = Date.now(), st = t < tsMs(survey.openAt) ? ["before", "열리기 전"] : t < tsMs(survey.closeAt) ? ["open", "접수 중"] : ["closed", "마감"];
     return { key: st[0], text: st[1] + (survey.visible ? "" : " (학부모 화면 숨김)") };
   }
@@ -518,7 +518,7 @@
       p.then(function () { return db.doc("survey/current").set(d); }).then(function () { m.className = "msg good"; m.textContent = newRound ? "새로고침했습니다. 받은 신청을 비우고 0부터 다시 받습니다." : "저장했습니다."; delete fresh.dataset.sure; fresh.textContent = "새로고침"; }, fail);
     }
     var fresh = h("button", { class: "btn danger", type: "button", onclick: function () { if (fresh.dataset.sure) save(true); else { fresh.dataset.sure = "1"; fresh.textContent = "한 번 더 누르면 받은 신청을 비우고 처음부터 다시 받습니다"; } } }, "새로고침");
-    view.appendChild(h("h2", { text: "회차 설정" }));
+    view.appendChild(h("h2", { text: "조사 설정" }));
     view.appendChild(h("div", { class: "form" }, h("label", { class: "wide" }, "조사 이름", F.title), h("label", { class: "wide" }, "학부모에게 보이는 안내문", F.notice),
       h("label", null, "열리는 시각", F.openAt), h("label", null, "마감 시각", F.closeAt), h("label", null, "한 시간 정원 (기본)", F.cap),
       h("label", null, "학부모 화면", h("div", { class: "checks" }, h("label", null, F.visible, "링크를 열면 이 조사가 보이게 하기"))),
