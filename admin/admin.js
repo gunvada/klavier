@@ -15,7 +15,7 @@
   var DOMAIN = "@klavier.admin";
 
   var db, auth, students = [], slots = {}, unsubs = [], route = { name: "home" }, filters = {};
-  var survey = null, subs = [], desk = {}, subsRound = null, subsUnsub = [], notices = [], awards = [], svTab = "order";
+  var survey = null, subs = [], desk = {}, subsRound = null, subsUnsub = [], notices = [], awards = [], ledger = [], lgMonth = "", lgCarry = false, svTab = "order";
   var view = document.getElementById("view");
 
   /* ── 작은 도구 ── */
@@ -79,7 +79,7 @@
     if (sub) view.appendChild(h("p", { class: "sub", text: sub }));
   }
   function render() {
-    var r = { home: home, timetable: timetable, slot: slotDetail, roster: roster, student: studentForm, add: studentForm, gone: gone, stats: stats, importer: importer, survey: surveyView, notices: noticeList, notice: noticeForm, awards: awardList, award: awardForm }[route.name] || home;
+    var r = { home: home, timetable: timetable, slot: slotDetail, roster: roster, student: studentForm, add: studentForm, gone: gone, stats: stats, importer: importer, survey: surveyView, notices: noticeList, notice: noticeForm, awards: awardList, award: awardForm, ledger: ledgerView, entry: entryForm }[route.name] || home;
     r(route.arg);
   }
 
@@ -115,6 +115,7 @@
       tile("퇴원 · 휴원생", "그만둔 아이, 쉬는 아이 기록", "gone"),
       tile("시간표 조사", surveyState().text + (survey && survey.round ? " · 접수 " + subs.length + "건" : ""), "survey"),
       tile("이달의 클라비어", "매달 상 받은 아이 기록 · " + awards.length + "건", "awards"),
+      tile("현금출납부", "수강료 수입·지출 기록, 인쇄 · " + ledger.length + "줄", "ledger"),
       tile("공지사항", "홈페이지 공지 " + notices.length + "건 · 글쓰기, 고치기", "notices")));
     view.appendChild(h("div", { class: "cap", text: "처음 한 번" }));
     view.appendChild(h("div", { class: "tiles" }, tile("노션에서 가져오기", "원생 명부 CSV 파일을 올려 옮깁니다", "importer")));
@@ -666,13 +667,75 @@
     check();
   }
 
+  /* ── 현금출납부 ── */
+  function ledgerView() {
+    if (!lgMonth) lgMonth = today().slice(0, 7);
+    page("현금출납부", "달마다 수입과 지출을 적고, 교육청 점검용으로 인쇄합니다.");
+    var all = ledger.slice().sort(function (a, b) { return (a.date || "").localeCompare(b.date || "") || (a.seq || 0) - (b.seq || 0); });
+    var rows = all.filter(function (e) { return (e.date || "").slice(0, 7) === lgMonth; }), bal = 0, inSum = 0, outSum = 0;
+    if (lgCarry) all.forEach(function (e) { if ((e.date || "").slice(0, 7) < lgMonth) bal += (Number(e.income) || 0) - (Number(e.expense) || 0); });
+    var carry = bal, out = h("div");
+    var mon = h("input", { type: "month", value: lgMonth, "aria-label": "달", onchange: function (e) { if (e.target.value) { lgMonth = e.target.value; ledgerView(); } } });
+    var cc = h("input", { type: "checkbox", checked: lgCarry, onchange: function (e) { lgCarry = e.target.checked; ledgerView(); } });
+    view.appendChild(h("div", { class: "row noprint", style: "margin-bottom:14px" }, h("label", { style: "width:170px" }, "달", mon), h("label", { class: "inline" }, cc, "지난달까지 잔액 이어서 계산"),
+      h("button", { class: "btn pri", type: "button", onclick: function () { route.back = "ledger"; go("entry"); } }, "한 줄 쓰기"),
+      h("button", { class: "btn", type: "button", onclick: bulk }, "이 달 수강료 한꺼번에 넣기"),
+      h("button", { class: "btn", type: "button", onclick: function () { window.print(); } }, "인쇄"),
+      h("button", { class: "btn", type: "button", onclick: csv }, "CSV 내려받기")));
+    view.appendChild(out);
+    var tb = h("tbody");
+    if (lgCarry) tb.appendChild(h("tr", { class: "carry" }, h("td", { text: "" }), h("td", { text: "전월 이월" }), h("td", { text: "" }), h("td", { text: "" }), h("td", { class: "num", text: won(carry) })));
+    rows.forEach(function (e) {
+      var i = Number(e.income) || 0, o = Number(e.expense) || 0; bal += i - o; inSum += i; outSum += o; e.bal = bal;
+      tb.appendChild(h("tr", { tabindex: "0", onclick: function () { route.back = "ledger"; go("entry", e.id); } }, h("td", { text: e.date || "" }), h("td", { text: e.memo || "" }), h("td", { class: "num", text: i ? won(i) : "" }), h("td", { class: "num", text: o ? won(o) : "" }), h("td", { class: "num", text: won(bal) })));
+    });
+    var sheet = h("div", { class: "sheet" }, h("h2", { class: "sheet-title", text: Number(lgMonth.slice(0, 4)) + "년 " + Number(lgMonth.slice(5, 7)) + "월 현금출납부" }), h("p", { class: "sheet-sub", text: "세종 클라비어 음악학원" }));
+    if (rows.length || lgCarry) sheet.appendChild(h("div", { class: "scroll" }, h("table", { class: "ledger" }, h("thead", null, h("tr", null, ["년월일", "적요", "수입금액", "지출금액", "차인잔액"].map(function (x) { return h("th", { text: x }); }))), tb,
+      h("tfoot", null, h("tr", null, h("td", { text: "" }), h("td", { text: "합계 (" + rows.length + "건)" }), h("td", { class: "num", text: won(inSum) }), h("td", { class: "num", text: won(outSum) }), h("td", { class: "num", text: won(bal) }))))));
+    else sheet.appendChild(h("p", { class: "empty", text: "이 달에 적은 내용이 없습니다. '이 달 수강료 한꺼번에 넣기'를 누르면 재원생 수강료가 한 번에 들어갑니다." }));
+    view.appendChild(sheet);
+    function csv() {
+      var data = [["년월일", "적요", "수입금액", "지출금액", "차인잔액"]].concat(rows.map(function (e) { return [e.date, e.memo, e.income || "", e.expense || "", e.bal]; }));
+      var text = "﻿" + data.map(function (r) { return r.map(function (v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }).join(","); }).join("\r\n");
+      var a = h("a", { href: URL.createObjectURL(new Blob([text], { type: "text/csv" })), download: "현금출납부_" + lgMonth + ".csv" }); document.body.appendChild(a); a.click(); a.remove();
+    }
+    function bulk() {
+      var day = h("input", { type: "date", value: lgMonth + "-01", min: lgMonth + "-01", max: lgMonth + "-31" }), m = h("span", { class: "msg" });
+      var have = {}; rows.forEach(function (e) { have[e.memo] = true; });
+      var todo = active().filter(function (s) { return fee(s) && !have["수강료(" + s.name + ")"]; }).sort(byName), sum = todo.reduce(function (a, s) { return a + fee(s); }, 0);
+      out.innerHTML = "";
+      out.appendChild(h("div", { class: "box noprint", style: "margin-bottom:14px" }, h("p", { text: "재원생 " + todo.length + "명의 수강료 " + won(sum) + "원을 '수강료(이름)'으로 한 줄씩 넣습니다. 이 달에 이미 들어간 아이는 뺐습니다. 넣은 뒤 날짜와 금액은 줄을 눌러 고칠 수 있습니다." }),
+        h("div", { class: "row" }, h("label", { style: "width:170px" }, "받은 날", day), h("button", { class: "btn pri", type: "button", disabled: !todo.length, onclick: function (e) {
+          var btn = e.currentTarget, b = db.batch(), base = Date.now(); btn.disabled = true;
+          todo.forEach(function (s, i) { b.set(db.collection("ledger").doc(), { date: day.value || lgMonth + "-01", memo: "수강료(" + s.name + ")", income: fee(s), expense: 0, seq: base + i }); });
+          b.commit().then(function () { out.innerHTML = ""; }, function () { btn.disabled = false; m.className = "msg bad"; m.textContent = "넣지 못했습니다. 다시 눌러 주세요."; });
+        } }, todo.length + "줄 넣기"), h("button", { class: "btn", type: "button", onclick: function () { out.innerHTML = ""; } }, "닫기"), m)));
+    }
+  }
+  function entryForm(id) {
+    var e = id ? ledger.filter(function (x) { return x.id === id; })[0] : { date: lgMonth === today().slice(0, 7) || !lgMonth ? today() : lgMonth + "-01" };
+    if (!e) return go("ledger");
+    route.back = "ledger"; page(id ? "출납 기록 고치기" : "출납 기록 쓰기", "수입이면 수입금액에, 지출이면 지출금액에 적습니다.");
+    var F = { date: h("input", { type: "date", value: e.date || "" }), memo: h("input", { type: "text", value: e.memo || "", maxlength: "60", placeholder: "예: 수강료(홍길동), 교재 구입" }),
+      income: h("input", { type: "number", min: "0", step: "1000", value: e.income || "" }), expense: h("input", { type: "number", min: "0", step: "1000", value: e.expense || "" }) }, m = h("span", { class: "msg" });
+    var del = h("button", { class: "btn danger", type: "button", onclick: function () { if (!del.dataset.sure) { del.dataset.sure = "1"; del.textContent = "한 번 더 누르면 지워집니다"; return; } db.collection("ledger").doc(id).delete().then(function () { go("ledger"); }); } }, "이 줄 지우기");
+    view.appendChild(h("form", { class: "form", onsubmit: function (ev) {
+      ev.preventDefault();
+      var d = { date: F.date.value, memo: F.memo.value.trim(), income: Number(F.income.value) || 0, expense: Number(F.expense.value) || 0, seq: e.seq || Date.now() };
+      if (!d.date || !d.memo || (!d.income && !d.expense)) { m.className = "msg bad"; m.textContent = "날짜, 적요, 금액을 넣어 주세요."; return; }
+      lgMonth = d.date.slice(0, 7);
+      (id ? db.collection("ledger").doc(id).set(d) : db.collection("ledger").add(d)).then(function () { go("ledger"); }, function () { m.className = "msg bad"; m.textContent = "저장하지 못했습니다. 다시 눌러 주세요."; });
+    } }, h("label", null, "년월일", F.date), h("label", null, "적요", F.memo), h("label", null, "수입금액 (원)", F.income), h("label", null, "지출금액 (원)", F.expense),
+      h("div", { class: "wide row" }, h("button", { class: "btn pri", type: "submit" }, "저장"), id ? del : null, m)));
+  }
+
   /* ── 시작 ── */
   function start(cfg) {
     firebase.initializeApp(cfg); db = firebase.firestore(); auth = firebase.auth();
     document.querySelector(".brand").addEventListener("click", function () { if (auth.currentUser) { route.back = null; go("home"); } });
     document.getElementById("logout").addEventListener("click", function () { auth.signOut(); });
     auth.onAuthStateChanged(function (u) {
-      unsubs.forEach(function (f) { f(); }); unsubs = []; students = []; slots = {}; subsUnsub.forEach(function (f) { f(); }); subsUnsub = []; subsRound = null; survey = null; subs = []; notices = []; awards = [];
+      unsubs.forEach(function (f) { f(); }); unsubs = []; students = []; slots = {}; subsUnsub.forEach(function (f) { f(); }); subsUnsub = []; subsRound = null; survey = null; subs = []; notices = []; awards = []; ledger = [];
       document.getElementById("who").hidden = !u;
       if (!u) return login();
       document.getElementById("who-id").textContent = (u.email || "").replace(DOMAIN, "");
@@ -684,6 +747,7 @@
       unsubs.push(db.doc("survey/current").onSnapshot(function (d) { survey = d.exists ? d.data() : null; watchRound(); if (route.name === "survey" || route.name === "home") keep(); }, function () {}));
       unsubs.push(db.collection("notices").onSnapshot(function (snap) { notices = snap.docs.map(function (d) { var x = d.data(); x.id = d.id; return x; }); if (route.name === "notices" || route.name === "home") keep(); }, function () {}));
       unsubs.push(db.collection("awards").onSnapshot(function (snap) { awards = snap.docs.map(function (d) { var x = d.data(); x.id = d.id; return x; }); if (route.name === "awards" || route.name === "home") keep(); }, function () {}));
+      unsubs.push(db.collection("ledger").onSnapshot(function (snap) { ledger = snap.docs.map(function (d) { var x = d.data(); x.id = d.id; return x; }); if (route.name === "ledger" || route.name === "home") keep(); }, function () {}));
       function keep() { var a = document.activeElement; if (a && /INPUT|TEXTAREA|SELECT/.test(a.tagName) && view.contains(a)) return; render(); }
     });
   }
