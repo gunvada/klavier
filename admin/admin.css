@@ -109,3 +109,9 @@ table.ledger tfoot td { font-weight:500; border-top:1px solid var(--text); } tab
   table.ledger th { background:#e6e6e6; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   table.ledger thead { display:table-header-group; } table.ledger tr { break-inside:avoid; }
 }
+
+.thumbs { display:flex; flex-wrap:wrap; gap:10px; margin:8px 0; }
+.thumbs div { display:grid; gap:6px; justify-items:start; } .thumbs img { width:150px; height:110px; object-fit:cover; border:1px solid var(--rule); border-radius:2px; }
+input[type=file] { font-size:14px; max-width:100%; }
+
+select.link { display:block; width:auto; max-width:230px; min-height:34px; margin-top:6px; padding:4px 8px; font-size:13px; }

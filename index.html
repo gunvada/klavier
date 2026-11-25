@@ -467,7 +467,8 @@ main > section[id], main > div[id], main [id="flow"], main [id="books"], main [i
 .sign strong { display: block; font-family: var(--font-serif-kr); font-weight: 900; font-size: 1.125rem; margin-top: 4px; }
 .sign img { width: 64px; height: auto; flex: none; }
 @media (max-width: 820px) { .dir { grid-template-columns: minmax(0, 1fr); } .dir-photo { max-width: 300px; } }
-.notices .body.pre { white-space: pre-line; }
+.notices .body .pre { white-space: pre-line; }
+.notices .body img { display: block; max-width: 100%; height: auto; margin-top: 14px; border-radius: 2px; }
 .notice-empty { padding-block: 28px; color: var(--text-2); }
 .nav.one { gap: 8px; flex-wrap: nowrap; }
 .nav.one a.survey-link { width: auto; padding: 6px 14px; border: 1px solid var(--text); border-radius: 2px; font-weight: 500; white-space: nowrap; }
@@ -938,17 +939,26 @@ main > section[id], main > div[id], main [id="flow"], main [id="books"], main [i
   function empty(t) { box.innerHTML = ""; var p = document.createElement("p"); p.className = "notice-empty"; p.textContent = t; box.appendChild(p); }
   if (!window.fetch) return empty("지금은 올라온 공지가 없습니다.");
   fetch("https://firestore.googleapis.com/v1/projects/klavier-academy/databases/(default)/documents:runQuery", { method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "notices" }], where: { fieldFilter: { field: { fieldPath: "published" }, op: "EQUAL", value: { booleanValue: true } } }, limit: 30 } }) })
+    body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "notices" }], select: { fields: ["title", "body", "date", "tag", "when", "pinned", "photoCount"].map(function (k) { return { fieldPath: k }; }) }, where: { fieldFilter: { field: { fieldPath: "published" }, op: "EQUAL", value: { booleanValue: true } } }, limit: 30 } }) })
     .then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (rows) {
       function v(f, k) { return (f[k] || {}).stringValue || ""; }
-      var list = (rows || []).filter(function (x) { return x.document; }).map(function (x) { var f = x.document.fields || {}; return { title: v(f, "title"), body: v(f, "body"), date: v(f, "date"), tag: v(f, "tag"), when: v(f, "when"), pinned: !!(f.pinned || {}).booleanValue }; })
+      var list = (rows || []).filter(function (x) { return x.document; }).map(function (x) { var f = x.document.fields || {}; return { name: x.document.name, photos: Number((f.photoCount || {}).integerValue) || 0, title: v(f, "title"), body: v(f, "body"), date: v(f, "date"), tag: v(f, "tag"), when: v(f, "when"), pinned: !!(f.pinned || {}).booleanValue }; })
         .filter(function (n) { return n.title; }).sort(function (a, b) { return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.date.localeCompare(a.date); });
       if (!list.length) return empty("지금은 올라온 공지가 없습니다.");
       box.innerHTML = "";
       list.forEach(function (n) {
         var d = document.createElement("details"), s = document.createElement("summary"), b = document.createElement("div"), tag = n.tag || "공지";
         [["tag", tag], ["ttl", n.title], ["when", n.when || (tag === "상시" ? "" : n.date.replace(/-/g, ". ").replace(/\. 0/g, ". "))]].forEach(function (p) { var e = document.createElement("span"); e.className = p[0]; e.textContent = p[1]; s.appendChild(e); });
-        b.className = "body pre"; b.textContent = n.body; d.appendChild(s); d.appendChild(b); box.appendChild(d);
+        var t = document.createElement("div"); t.className = "pre"; t.textContent = n.body; b.className = "body"; b.appendChild(t); d.appendChild(s); d.appendChild(b); box.appendChild(d);
+        if (n.photos) d.addEventListener("toggle", function () {
+          if (!d.open || d.dataset.photos) return; d.dataset.photos = "1";
+          fetch("https://firestore.googleapis.com/v1/" + n.name + "?mask.fieldPaths=photos").then(function (r) { return r.ok ? r.json() : null; }).then(function (doc) {
+            var arr = (((doc || {}).fields || {}).photos || {}).arrayValue; (arr && arr.values || []).forEach(function (p, i) {
+              if (!p.stringValue || p.stringValue.indexOf("data:image/") !== 0) return;
+              var im = document.createElement("img"); im.src = p.stringValue; im.alt = n.title + " 사진 " + (i + 1); b.appendChild(im);
+            });
+          }).catch(function () { delete d.dataset.photos; });
+        });
       });
     }).catch(function () { empty("공지를 불러오지 못했습니다. 잠시 뒤 다시 열어 주세요."); });
 })();
