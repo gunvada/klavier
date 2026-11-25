@@ -7,7 +7,6 @@
   var GRADES = ["6세", "7세", "초1", "초2", "초3", "초4", "초5", "초6", "중1", "중2", "중3", "고1", "고2", "고3", "성인"];
   var BOOKS = ["바이엘1", "바이엘2", "바이엘3", "바이엘4", "체르니100", "체르니30", "체르니40", "작품반"];
   var SCHOOLS = ["가득유치원", "새롬유치원", "새롬초", "가득초", "새뜸초", "새롬중", "새뜸중", "새롬고", "기타"];
-  var TEACHERS = ["원장", "선생님"];
   var CONSENTS = ["사진·영상 사용", "외벽 이름 게시", "얼굴 노출"];
   var SOURCES = ["재원생 소개", "지인 소개", "네이버 검색·플레이스", "맘카페", "블로그", "인스타그램", "간판·외벽", "이사 와서 찾음", "기타"];
   var WATCH = ["연습 횟수 감소", "같은 곡 3주 이상", "평가 하락", "결석·지각 증가", "다른 학원 시간 언급", "이탈 구간 학년", "형제 퇴원", "친구들과 마찰", "수업 태도 불량"];
@@ -118,35 +117,77 @@
   }
 
   /* ── 시간표 현황 ── */
+  var ttView = "week";
   function timetable() {
     page("시간표 현황", "칸을 누르면 그 시간의 아이 목록과 정원을 봅니다.");
-    view.appendChild(h("div", { class: "legend" }, h("span", null, h("i", { style: "background:var(--full)" }), "정원이 찬 칸"), h("span", null, h("i", { style: "background:var(--empty)" }), "비어 있는 칸")));
-    var g = h("div", { class: "tt" }, h("div"));
-    DAYS.forEach(function (d) { g.appendChild(h("div", { class: "h", text: d[1] })); });
-    TIMES.forEach(function (t) {
-      g.appendChild(h("div", { class: "t", text: t }));
-      DAYS.forEach(function (d) {
-        var id = slotId(d[0], t), kids = inSlot(id), c = cap(id);
-        g.appendChild(h("button", { class: "cell" + (kids.length >= c ? " full" : kids.length === 0 ? " none" : ""), type: "button", onclick: function () { route.back = "timetable"; go("slot", id); } },
-          h("span", { class: "n", text: kids.length + " / " + c }), h("span", { class: "names", text: kids.map(function (s) { return s.name; }).join(", ") })));
+    var VIEWS = [["week", "주간 수업표"], ["day", "요일별 시간표"], ["cap", "정원 현황"], ["class", "반편성"]];
+    function open(id) { return function () { route.back = "timetable"; go("slot", id); }; }
+    function state(n, c) { return n >= c ? " full" : n === 0 ? " none" : ""; }
+    view.appendChild(h("div", { class: "tabs", role: "tablist" }, VIEWS.map(function (v) {
+      return h("button", { type: "button", role: "tab", "aria-selected": ttView === v[0] ? "true" : "false", class: ttView === v[0] ? "on" : "", text: v[1], onclick: function () { ttView = v[0]; timetable(); } });
+    })));
+    var legend = h("div", { class: "legend" }, h("span", null, h("i", { style: "background:var(--full)" }), "정원이 찬 칸"), h("span", null, h("i", { style: "background:var(--empty)" }), "비어 있는 칸"));
+    if (ttView === "week") {
+      view.appendChild(legend);
+      var g = h("div", { class: "tt" }, h("div"));
+      DAYS.forEach(function (d) { g.appendChild(h("div", { class: "h", text: d[1] })); });
+      TIMES.forEach(function (t) {
+        g.appendChild(h("div", { class: "t", text: t }));
+        DAYS.forEach(function (d) {
+          var id = slotId(d[0], t), kids = inSlot(id), c = cap(id);
+          g.appendChild(h("button", { class: "cell" + state(kids.length, c), type: "button", onclick: open(id) },
+            h("span", { class: "n", text: kids.length + " / " + c }), h("span", { class: "names", text: kids.map(function (s) { return s.name; }).join(", ") })));
+        });
       });
-    });
-    view.appendChild(h("div", { style: "overflow-x:auto" }, g));
+      view.appendChild(h("div", { style: "overflow-x:auto" }, g));
+    } else if (ttView === "day") {
+      view.appendChild(legend);
+      view.appendChild(h("div", { class: "board" }, DAYS.map(function (d) {
+        var total = 0, cards = TIMES.map(function (t) {
+          var id = slotId(d[0], t), kids = inSlot(id), c = cap(id); total += kids.length;
+          return h("button", { class: "cell" + state(kids.length, c), type: "button", onclick: open(id) },
+            h("span", { class: "n", text: d[1] + " " + t + "  ·  " + kids.length + " / " + c }), h("span", { class: "names", text: kids.map(function (s) { return s.name; }).join(", ") }));
+        });
+        return h("section", null, h("h2", null, d[1] + "요일 ", h("small", { text: "연 " + total + "명" })), cards);
+      })));
+    } else if (ttView === "cap") {
+      var tb = h("tbody"), sumN = 0, sumC = 0;
+      DAYS.forEach(function (d) { TIMES.forEach(function (t) {
+        var id = slotId(d[0], t), n = inSlot(id).length, c = cap(id), sl = slots[id] || {}; sumN += n; sumC += c;
+        tb.appendChild(h("tr", { tabindex: "0", onclick: open(id) }, h("td", { text: d[1] + " " + t }), h("td", { class: "num", text: n }), h("td", { class: "num", text: c }), h("td", { class: "num", text: c - n }),
+          h("td", null, h("span", { class: "bar" + state(n, c) }, h("i", { style: "width:" + Math.min(100, c ? Math.round(n / c * 100) : 0) + "%" }))), h("td", { text: sl.memo || "" })));
+      }); });
+      view.appendChild(h("p", { class: "msg", text: "전체 " + sumN + "자리 사용 / 정원 " + sumC + "자리 (" + (sumC ? Math.round(sumN / sumC * 100) : 0) + "%)" }));
+      view.appendChild(h("div", { class: "scroll" }, h("table", { class: "captable" }, h("thead", null, h("tr", null, ["반", "인원", "정원", "남은 자리", "채움", "메모"].map(function (x) { return h("th", { text: x }); }))), tb)));
+    } else {
+      var any = false;
+      DAYS.forEach(function (d) {
+        var cards = [];
+        TIMES.forEach(function (t) {
+          var id = slotId(d[0], t), kids = inSlot(id).sort(function (a, b) { return gradeOrder(a) - gradeOrder(b) || byName(a, b); }), c = cap(id); if (!kids.length) return;
+          var st = {}; kids.forEach(function (s) { var k = stage(s) || "미정"; st[k] = (st[k] || 0) + 1; });
+          cards.push(h("button", { class: "klass" + state(kids.length, c), type: "button", onclick: open(id) },
+            h("b", { text: d[1] + " " + t }), h("span", { class: "n", text: kids.length + " / " + c + "  ·  " + Object.keys(st).map(function (k) { return k + " " + st[k]; }).join(", ") }),
+            h("ul", null, kids.map(function (s) { return h("li", null, h("span", { text: s.name }), h("small", { text: [grade(s), s.book].filter(Boolean).join(" · ") })); }))));
+        });
+        if (cards.length) { any = true; view.appendChild(h("h2", { text: d[1] + "요일" })); view.appendChild(h("div", { class: "klasses" }, cards)); }
+      });
+      if (!any) view.appendChild(h("p", { class: "empty", text: "시간이 배정된 아이가 없습니다." }));
+    }
   }
   function slotDetail(id) {
     route.back = "timetable";
     var kids = inSlot(id), s = slots[id] || {};
     page(slotName(id), kids.length + "명 / 정원 " + cap(id) + "명");
     var c = h("input", { type: "number", min: "0", max: "30", value: cap(id), id: "slot-cap" });
-    var t = h("select", { id: "slot-teacher" }, ["", "원장", "선생님", "공동"].map(function (x) { return h("option", { value: x, selected: s.teacher === x, text: x || "정하지 않음" }); }));
     var memo = h("input", { type: "text", value: s.memo || "", id: "slot-memo" });
     var m = h("span", { class: "msg" });
-    view.appendChild(h("div", { class: "form" }, h("label", null, "정원", c), h("label", null, "담당", t), h("label", { class: "wide" }, "메모", memo),
+    view.appendChild(h("div", { class: "form" }, h("label", null, "정원", c), h("label", { class: "wide" }, "메모", memo),
       h("div", { class: "row wide" }, h("button", { class: "btn pri", type: "button", onclick: function () {
-        db.collection("slots").doc(id).set({ capacity: Number(c.value) || 10, teacher: t.value, memo: memo.value.trim() }, { merge: true }).then(function () { m.className = "msg good"; m.textContent = "저장했습니다."; }, function () { m.className = "msg bad"; m.textContent = "저장하지 못했습니다."; });
+        db.collection("slots").doc(id).set({ capacity: Number(c.value) || 10, memo: memo.value.trim() }, { merge: true }).then(function () { m.className = "msg good"; m.textContent = "저장했습니다."; }, function () { m.className = "msg bad"; m.textContent = "저장하지 못했습니다."; });
       } }, "저장"), m)));
     view.appendChild(h("h2", { text: "이 시간의 아이" }));
-    view.appendChild(kids.length ? table(kids, ["이름", "학년", "교재", "주 횟수", "담당"], function (x) { return [x.name, grade(x), x.book || "", x.weeklyCount || "", x.teacher || ""]; }, "slot") : h("p", { class: "empty", text: "이 시간에 오는 아이가 없습니다." }));
+    view.appendChild(kids.length ? table(kids, ["이름", "학년", "교재", "주 횟수"], function (x) { return [x.name, grade(x), x.book || "", x.weeklyCount || ""]; }, "slot") : h("p", { class: "empty", text: "이 시간에 오는 아이가 없습니다." }));
   }
 
   /* ── 표 ── */
@@ -160,33 +201,61 @@
     return h("div", { class: "scroll" }, h("table", null, h("thead", null, h("tr", null, heads.map(function (x) { return h("th", { text: x }); }))), tb));
   }
 
+  /* ── 검색 ── */
+  var query = { roster: "", gone: "" };
+  function hay(s) {
+    return [s.name, s.school, grade(s), s.book, stage(s), s.guardian, s.guardianPhone, (s.guardianPhone || "").replace(/\D/g, ""), s.payer, s.source, s.memo, s.enrolledOn, s.leftOn,
+      (s.watchReasons || []).join(" "), (s.leaveReasons || []).join(" "), sortSlots(s.slots || []).map(slotName).join(" "), s.watch ? "주의" : ""].join(" ").toLowerCase();
+  }
+  function match(s, q) { var t = hay(s); return q.toLowerCase().split(/\s+/).filter(Boolean).every(function (w) { return t.indexOf(w) >= 0; }); }
+  function searchBox(key, hint, draw) {
+    var inp = h("input", { type: "search", value: query[key], placeholder: hint, "aria-label": "검색", autocomplete: "off", oninput: function (e) { query[key] = e.target.value; x.hidden = !query[key]; draw(); } });
+    var x = h("button", { type: "button", class: "clear", "aria-label": "검색어 지우기", text: "×", onclick: function () { query[key] = ""; inp.value = ""; x.hidden = true; draw(); inp.focus(); } });
+    x.hidden = !query[key];
+    var box = h("div", { class: "search" }, inp, x);
+    box.insertAdjacentHTML("afterbegin", '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>');
+    return box;
+  }
+
   /* ── 원생 명부 ── */
   function roster() {
     page("원생 명부", "아이 이름을 누르면 수정하거나 퇴원·휴원 처리할 수 있습니다.");
-    var list = active();
     function sel(key, label, opts) {
-      return h("label", null, label, h("select", { onchange: function (e) { filters[key] = e.target.value; roster(); } },
+      return h("label", null, label, h("select", { onchange: function (e) { filters[key] = e.target.value; draw(); } },
         [h("option", { value: "", text: "전체" })].concat(opts.map(function (o) { return h("option", { value: o, selected: filters[key] === o, text: o }); }))));
     }
-    view.appendChild(h("div", { class: "filters" }, sel("grade", "학년", GRADES), sel("school", "학교", SCHOOLS), sel("book", "교재", BOOKS), sel("teacher", "담당", TEACHERS), sel("watch", "주의", ["주의 원생만"])));
-    list = list.filter(function (s) {
-      return (!filters.grade || grade(s) === filters.grade) && (!filters.school || s.school === filters.school) && (!filters.book || s.book === filters.book) && (!filters.teacher || s.teacher === filters.teacher) && (!filters.watch || s.watch);
-    }).sort(function (a, b) { return gradeOrder(a) - gradeOrder(b) || byName(a, b); });
-    view.appendChild(h("p", { class: "msg", text: list.length + "명" }));
-    view.appendChild(list.length ? table(list, ["이름", "학교", "학년", "주 횟수", "교재", "단계", "월 수강료", "시간", "주의"], function (s) {
-      var f = fee(s);
-      return [s.name, s.school || "", grade(s), s.weeklyCount || "", s.book || "", stage(s), f == null ? "확인 필요" : f, sortSlots(s.slots).map(slotName).join(" · "), s.watch ? h("span", { class: "tag w", text: "주의" }) : ""];
-    }) : h("p", { class: "empty", text: students.length ? "조건에 맞는 아이가 없습니다." : "아직 원생이 없습니다. 홈의 '노션에서 가져오기'나 '신규 등록'으로 시작합니다." }));
+    var out = h("div");
+    function draw() {
+      var q = query.roster.trim(), list = active().filter(function (s) {
+        return (!filters.grade || grade(s) === filters.grade) && (!filters.school || s.school === filters.school) && (!filters.book || s.book === filters.book) && (!filters.watch || s.watch) && (!q || match(s, q));
+      }).sort(function (a, b) { return gradeOrder(a) - gradeOrder(b) || byName(a, b); });
+      out.innerHTML = "";
+      out.appendChild(h("p", { class: "msg", text: (q ? "'" + q + "' 검색 결과 " : "") + list.length + "명" }));
+      out.appendChild(list.length ? table(list, ["이름", "학교", "학년", "주 횟수", "교재", "단계", "월 수강료", "시간", "주의"], function (s) {
+        var f = fee(s);
+        return [s.name, s.school || "", grade(s), s.weeklyCount || "", s.book || "", stage(s), f == null ? "확인 필요" : f, sortSlots(s.slots).map(slotName).join(" · "), s.watch ? h("span", { class: "tag w", text: "주의" }) : ""];
+      }) : h("p", { class: "empty", text: students.length ? "조건에 맞는 아이가 없습니다." : "아직 원생이 없습니다. 홈의 '노션에서 가져오기'나 '신규 등록'으로 시작합니다." }));
+    }
+    view.appendChild(searchBox("roster", "이름, 학교, 교재, 요일·시간, 메모로 검색", draw));
+    view.appendChild(h("div", { class: "filters" }, sel("grade", "학년", GRADES), sel("school", "학교", SCHOOLS), sel("book", "교재", BOOKS), sel("watch", "주의", ["주의 원생만"])));
+    view.appendChild(out); draw();
   }
   function gone() {
     page("퇴원 · 휴원생", "지우지 않고 기록으로 남깁니다.");
-    ["휴원", "퇴원"].forEach(function (st) {
-      var list = students.filter(function (s) { return s.status === st; }).sort(function (a, b) { return (b.leftOn || "").localeCompare(a.leftOn || "") || byName(a, b); });
-      view.appendChild(h("h2", { text: st + "생 " + list.length + "명" }));
-      view.appendChild(list.length ? table(list, ["이름", "학년", "교재", "등록일", st === "퇴원" ? "퇴원일" : "", st === "퇴원" ? "퇴원 사유" : "", "재원 개월"], function (s) {
-        return [s.name, grade(s), s.book || "", s.enrolledOn || "", s.leftOn || "", (s.leaveReasons || []).join(", "), months(s) == null ? "" : months(s) + "개월"];
-      }, "gone") : h("p", { class: "empty", text: "없습니다." }));
-    });
+    var out = h("div");
+    function draw() {
+      var q = query.gone.trim();
+      out.innerHTML = "";
+      ["휴원", "퇴원"].forEach(function (st) {
+        var list = students.filter(function (s) { return s.status === st && (!q || match(s, q)); }).sort(function (a, b) { return (b.leftOn || "").localeCompare(a.leftOn || "") || byName(a, b); });
+        out.appendChild(h("h2", { text: st + "생 " + (q ? "검색 결과 " : "") + list.length + "명" }));
+        out.appendChild(list.length ? table(list, ["이름", "학년", "교재", "등록일", st === "퇴원" ? "퇴원일" : "", st === "퇴원" ? "퇴원 사유" : "", "재원 개월"], function (s) {
+          return [s.name, grade(s), s.book || "", s.enrolledOn || "", s.leftOn || "", (s.leaveReasons || []).join(", "), months(s) == null ? "" : months(s) + "개월"];
+        }, "gone") : h("p", { class: "empty", text: q ? "검색된 아이가 없습니다." : "없습니다." }));
+      });
+    }
+    view.appendChild(searchBox("gone", "이름, 퇴원일(예: 2025-06), 퇴원 사유, 메모로 검색", draw));
+    view.appendChild(out); draw();
   }
 
   /* ── 아이 한 명: 신규 등록 · 수정 ── */
@@ -203,7 +272,7 @@
     var F = {
       name: inp("text", s.name), gradeInput: select(GRADES, isNew ? "" : grade(s), "고르기"), school: select(SCHOOLS, s.school, "고르기"),
       weeklyCount: select([1, 2, 3, 4, 5], s.weeklyCount, "고르기"), book: select(BOOKS, s.book, "고르기"), bookChangedOn: inp("date", s.bookChangedOn),
-      teacher: select(TEACHERS, s.teacher, "고르기"), enrolledOn: inp("date", s.enrolledOn), consent: checks(CONSENTS, s.consent), payer: inp("text", s.payer),
+      enrolledOn: inp("date", s.enrolledOn), consent: checks(CONSENTS, s.consent), payer: inp("text", s.payer),
       source: select(SOURCES, s.source, "고르기"), guardian: inp("text", s.guardian), guardianPhone: inp("tel", s.guardianPhone), feeException: inp("number", s.feeException, { min: "0", step: "1000" }),
       watch: h("input", { type: "checkbox", checked: !!s.watch }), watchReasons: checks(WATCH, s.watchReasons), memo: h("textarea", null, s.memo || "")
     };
@@ -225,9 +294,9 @@
     var m = h("p", { class: "msg" });
     function L(label, el, wide) { return h("label", { class: wide ? "wide" : "" }, label, el); }
     var form = h("form", { class: "form", onsubmit: save },
-      L("아이 이름 (성까지)", F.name), L("지금 학년", F.gradeInput), L("학교", F.school), L("주 몇 회", F.weeklyCount), L("교재", F.book), L("교재 바꾼 날", F.bookChangedOn),
+      L("아이 이름 (성까지)", F.name), L("지금 학년", F.gradeInput), L("학교", F.school), L("주 몇 회", F.weeklyCount), L("교재", F.book), isNew ? null : L("지금 교재를 시작한 날", F.bookChangedOn),
       h("div", { class: "wide" }, h("label", null, "수업 요일 · 시간"), grid, pickMsg),
-      L("담당", F.teacher), L("등록일 (첫 수업일)", F.enrolledOn), h("div", { class: "wide" }, h("label", null, "학부모 동의"), F.consent),
+      L("등록일 (첫 수업일)", F.enrolledOn), h("div", { class: "wide" }, h("label", null, "학부모 동의"), F.consent),
       L("결제하실 분", F.payer), L("알게 된 경로", F.source), L("보호자", F.guardian), L("보호자 연락처", F.guardianPhone),
       L("수강료 예외 (원, 규칙과 다를 때만)", F.feeException), h("label", null, "주의 원생", h("div", { class: "checks" }, h("label", null, F.watch, "주의해서 볼 아이"))),
       h("div", { class: "wide" }, h("label", null, "주의 사유"), F.watchReasons), L("메모", F.memo, true),
@@ -243,9 +312,10 @@
       if (bad) { m.className = "msg bad"; m.textContent = bad; return; }
       if (dup.length && !form.dataset.dupOk) { form.dataset.dupOk = "1"; m.className = "msg bad"; m.textContent = "같은 이름의 원생이 이미 있습니다(" + dup[0].status + "). 형제나 동명이인이 맞으면 한 번 더 눌러 주세요."; return; }
       var data = { name: name, gradeInput: F.gradeInput.value, gradeYear: schoolYear(), school: F.school.value, weeklyCount: w, book: F.book.value, bookChangedOn: F.bookChangedOn.value || null,
-        teacher: F.teacher.value, enrolledOn: F.enrolledOn.value || null, consent: read(F.consent), payer: F.payer.value.trim(), source: F.source.value, guardian: F.guardian.value.trim(),
+        enrolledOn: F.enrolledOn.value || null, consent: read(F.consent), payer: F.payer.value.trim(), source: F.source.value, guardian: F.guardian.value.trim(),
         guardianPhone: F.guardianPhone.value.trim(), feeException: F.feeException.value === "" ? null : Number(F.feeException.value), watch: F.watch.checked, watchReasons: read(F.watchReasons), memo: F.memo.value.trim(), slots: sl };
-      if (!isNew && s.book !== data.book && !F.bookChangedOn.value) data.bookChangedOn = today();
+      if (isNew) data.bookChangedOn = data.book ? (data.enrolledOn || today()) : null;
+      else if (s.book !== data.book && (F.bookChangedOn.value || null) === (s.bookChangedOn || null)) data.bookChangedOn = today();
       m.className = "msg"; m.textContent = "저장하는 중입니다.";
       var p = isNew ? db.collection("students").add(Object.assign(data, { status: "재원", createdAt: firebase.firestore.FieldValue.serverTimestamp() })) : db.collection("students").doc(s.id).update(data);
       p.then(function () { if (isNew) go("roster"); else { m.className = "msg good"; m.textContent = "저장했습니다."; } }, function () { m.className = "msg bad"; m.textContent = "저장하지 못했습니다. 연결을 확인해 주세요."; });
@@ -315,7 +385,6 @@
     view.appendChild(bars("교재", tally(act, function (s) { return s.book; }, BOOKS)));
     view.appendChild(bars("주 횟수", tally(act, function (s) { return s.weeklyCount ? "주 " + s.weeklyCount + "회" : ""; }, ["주 1회", "주 2회", "주 3회", "주 4회", "주 5회"])));
     view.appendChild(bars("학교", tally(act, function (s) { return s.school; })));
-    view.appendChild(bars("담당", tally(act, function (s) { return s.teacher; })));
     view.appendChild(bars("요일별 등원 인원", DAYS.map(function (d) { var n = 0; TIMES.forEach(function (t) { n += inSlot(slotId(d[0], t)).length; }); return [d[1] + "요일", n]; })));
     view.appendChild(h("h2", { text: "주의 원생" }));
     view.appendChild(bars("주의 사유", tally(act.filter(function (s) { return s.watch; }), function (s) { return s.watchReasons; })));
