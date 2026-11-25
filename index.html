@@ -466,6 +466,7 @@ main > section[id], main > div[id], main [id="flow"], main [id="books"], main [i
 .sign strong { display: block; font-family: var(--font-serif-kr); font-weight: 900; font-size: 1.125rem; margin-top: 4px; }
 .sign img { width: 64px; height: auto; flex: none; }
 @media (max-width: 820px) { .dir { grid-template-columns: minmax(0, 1fr); } .dir-photo { max-width: 300px; } }
+.notices .body.pre { white-space: pre-line; }
 </style>
 </head>
 <body>
@@ -922,6 +923,23 @@ main > section[id], main > div[id], main [id="flow"], main [id="books"], main [i
       navigator.clipboard.writeText(addr.textContent).then(function () { note.textContent = "주소를 복사했습니다."; }, selectIt);
     } else { selectIt(); }
   });
+})();
+</script>
+<script>
+(function () {
+  var box = document.querySelector("#notice .notices"); if (!box || !window.fetch) return;
+  fetch("https://firestore.googleapis.com/v1/projects/klavier-academy/databases/(default)/documents:runQuery", { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "notices" }], where: { fieldFilter: { field: { fieldPath: "published" }, op: "EQUAL", value: { booleanValue: true } } }, limit: 30 } }) })
+    .then(function (r) { return r.ok ? r.json() : []; }).then(function (rows) {
+      var list = (rows || []).filter(function (x) { return x.document; }).map(function (x) { var f = x.document.fields || {}; return { title: (f.title || {}).stringValue || "", body: (f.body || {}).stringValue || "", date: (f.date || {}).stringValue || "", pinned: !!(f.pinned || {}).booleanValue }; })
+        .filter(function (n) { return n.title; }).sort(function (a, b) { return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.date.localeCompare(a.date); });
+      var first = box.firstChild;
+      list.forEach(function (n) {
+        var d = document.createElement("details"), s = document.createElement("summary"), b = document.createElement("div");
+        [["tag", n.pinned ? "중요" : "공지"], ["ttl", n.title], ["when", n.date.replace(/-/g, ". ").replace(/\. 0/g, ". ")]].forEach(function (p) { var e = document.createElement("span"); e.className = p[0]; e.textContent = p[1]; s.appendChild(e); });
+        b.className = "body pre"; b.textContent = n.body; d.appendChild(s); d.appendChild(b); box.insertBefore(d, first);
+      });
+    }).catch(function () {});
 })();
 </script>
 </body>

@@ -87,3 +87,7 @@ td.num { text-align:right; font-variant-numeric:tabular-nums; }
 .klass { text-align:left; background:var(--surface); border:1px solid var(--rule); border-radius:4px; padding:12px; cursor:pointer; display:block; width:100%; }
 .klass.full { background:var(--full); } .klass b { display:block; font-size:15.5px; } .klass .n { display:block; font-size:12.5px; color:var(--text-2); margin:2px 0 8px; }
 .klass ul { list-style:none; margin:0; padding:0; display:grid; gap:4px; } .klass li { display:flex; justify-content:space-between; gap:8px; font-size:14px; }
+
+table.plain tbody tr { cursor:default; }
+code { font-family:ui-monospace,Menlo,monospace; font-size:13.5px; background:var(--alt); padding:6px 10px; border-radius:2px; word-break:break-all; }
+input[type=datetime-local], input[type=month] { width:100%; min-height:40px; padding:8px 10px; border:1px solid var(--rule); border-radius:2px; background:var(--surface); font-size:15px; }

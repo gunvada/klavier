@@ -15,6 +15,7 @@
   var DOMAIN = "@klavier.admin";
 
   var db, auth, students = [], slots = {}, unsubs = [], route = { name: "home" }, filters = {};
+  var survey = null, subs = [], desk = {}, subsRound = null, subsUnsub = [], notices = [], awards = [], svTab = "order";
   var view = document.getElementById("view");
 
   /* ── 작은 도구 ── */
@@ -78,7 +79,7 @@
     if (sub) view.appendChild(h("p", { class: "sub", text: sub }));
   }
   function render() {
-    var r = { home: home, timetable: timetable, slot: slotDetail, roster: roster, student: studentForm, add: studentForm, gone: gone, stats: stats, importer: importer }[route.name] || home;
+    var r = { home: home, timetable: timetable, slot: slotDetail, roster: roster, student: studentForm, add: studentForm, gone: gone, stats: stats, importer: importer, survey: surveyView, notices: noticeList, notice: noticeForm, awards: awardList, award: awardForm }[route.name] || home;
     r(route.arg);
   }
 
@@ -112,7 +113,9 @@
     view.appendChild(h("div", { class: "tiles" },
       tile("통계 · 월말 점검", "등록·퇴원 추이, 경로, 주의 원생", "stats"),
       tile("퇴원 · 휴원생", "그만둔 아이, 쉬는 아이 기록", "gone"),
-      tile("시간표 조사", "2단계에서 열립니다", "home", true)));
+      tile("시간표 조사", surveyState().text + (survey && survey.round ? " · 접수 " + subs.length + "건" : ""), "survey"),
+      tile("이달의 클라비어", "매달 상 받은 아이 기록 · " + awards.length + "건", "awards"),
+      tile("공지사항", "홈페이지 공지 " + notices.length + "건 · 글쓰기, 고치기", "notices")));
     view.appendChild(h("div", { class: "cap", text: "처음 한 번" }));
     view.appendChild(h("div", { class: "tiles" }, tile("노션에서 가져오기", "원생 명부 CSV 파일을 올려 옮깁니다", "importer")));
   }
@@ -280,6 +283,7 @@
     var lastRule = ruleFee(s);
     function refill() { var r = ruleFee({ book: F.book.value, weeklyCount: F.weeklyCount.value }); if (F.fee.value === "" || Number(F.fee.value) === lastRule) F.fee.value = r || ""; lastRule = r; }
     F.book.addEventListener("change", refill); F.weeklyCount.addEventListener("change", refill);
+    F.book.addEventListener("change", function () { F.bookChangedOn.value = F.book.value === (s.book || "") ? (s.bookChangedOn || "") : F.book.value ? today() : ""; });
     var pickMsg = h("p", { class: "msg" });
     var grid = h("div", { class: "pick" });
     DAYS.forEach(function (d) {
@@ -462,13 +466,213 @@
     }
   }
 
+  /* ── 시간표 조사 ── */
+  var NOTICE0 = "한 시간 정원은 10명입니다.\n접수 순서대로 가배정하고, 정원이 찬 시간은 대기로 접수됩니다.\n아이 이름은 성까지 적어 주세요.\n오실 수 있는 요일만 골라 주세요.\n문의: 문자 010-4488-4763";
+  function tsMs(t) { return t && t.toMillis ? t.toMillis() : 0; }
+  function kstInput(msv) { return msv ? new Date(msv + 9 * 36e5).toISOString().slice(0, 16) : ""; }
+  function kstText(msv, sec) { return msv ? new Date(msv + 9 * 36e5).toISOString().slice(5, sec ? 19 : 16).replace("T", " ") : ""; }
+  function fromKst(v) { return v ? firebase.firestore.Timestamp.fromDate(new Date(v + ":00+09:00")) : null; }
+  function surveyState() {
+    if (!survey || !survey.round) return { key: "none", text: "회차 없음" };
+    var t = Date.now(), st = t < tsMs(survey.openAt) ? ["before", "열리기 전"] : t < tsMs(survey.closeAt) ? ["open", "접수 중"] : ["closed", "마감"];
+    return { key: st[0], text: st[1] + (survey.visible ? "" : " (학부모 화면 숨김)") };
+  }
+  function svCap(id) { return survey && survey.caps && survey.caps[id] != null ? Number(survey.caps[id]) : (survey && Number(survey.cap)) || 10; }
+  function watchRound() {
+    var r = survey && survey.round; if (r === subsRound) return;
+    subsUnsub.forEach(function (f) { f(); }); subsUnsub = []; subs = []; desk = {}; subsRound = r; if (!r) return;
+    function again() { if (route.name === "survey" || route.name === "home") { var a = document.activeElement; if (!(a && /INPUT|TEXTAREA|SELECT/.test(a.tagName) && view.contains(a))) render(); } }
+    subsUnsub.push(db.collection("rounds/" + r + "/submissions").onSnapshot(function (snap) { subs = snap.docs.map(function (d) { var x = d.data(); x.id = d.id; return x; }); again(); }, function () {}));
+    subsUnsub.push(db.collection("rounds/" + r + "/desk").onSnapshot(function (snap) { desk = {}; snap.forEach(function (d) { desk[d.id] = d.data(); }); again(); }, function () {}));
+  }
+  /* 접수 순서대로 칸마다 순번을 매깁니다. 정원 안이면 가배정, 넘으면 대기입니다. */
+  function ranked() {
+    var list = subs.slice().sort(function (a, b) { return (tsMs(a.at) || 9e15) - (tsMs(b.at) || 9e15); }), n = {}, bySlot = {};
+    list.forEach(function (s, i) {
+      s.no = i + 1; s.rank = {}; s.waits = 0;
+      (s.slots || []).forEach(function (id) { n[id] = (n[id] || 0) + 1; s.rank[id] = n[id]; if (n[id] > svCap(id)) s.waits++; (bySlot[id] = bySlot[id] || []).push(s); });
+      var m = active().filter(function (x) { return x.name === s.name; });
+      s.match = m.length === 1 ? m[0] : null; s.check = s.kind === "재원생" ? (m.length === 0 ? "명부에 없는 이름" : m.length > 1 ? "같은 이름 " + m.length + "명" : "") : (m.length ? "명부에 같은 이름 있음" : "");
+    });
+    return { list: list, n: n, bySlot: bySlot };
+  }
+  function surveyView() {
+    var st = surveyState(), R = ranked(), sv = survey || {};
+    page("시간표 조사", "지금 상태: " + st.text + (sv.round ? " · 접수 " + subs.length + "건" : ""));
+    var link = location.origin + "/schedule/";
+    var F = { title: h("input", { type: "text", value: sv.title || "시간표 조사" }), notice: h("textarea", { rows: "6" }, sv.notice == null ? NOTICE0 : sv.notice),
+      openAt: h("input", { type: "datetime-local", value: kstInput(tsMs(sv.openAt)) }), closeAt: h("input", { type: "datetime-local", value: kstInput(tsMs(sv.closeAt)) }),
+      cap: h("input", { type: "number", min: "1", max: "30", value: sv.cap || 10 }), visible: h("input", { type: "checkbox", checked: !!sv.visible }) };
+    var m = h("span", { class: "msg" });
+    function fail() { m.className = "msg bad"; m.textContent = "저장하지 못했습니다."; }
+    function data() {
+      var caps = {}; Object.keys(slots).forEach(function (id) { var c = slots[id].capacity; if (c != null && Number(c) !== 10) caps[id] = Number(c); });
+      return { title: F.title.value.trim() || "시간표 조사", notice: F.notice.value.trim(), openAt: fromKst(F.openAt.value), closeAt: fromKst(F.closeAt.value), cap: Number(F.cap.value) || 10, caps: caps, visible: F.visible.checked };
+    }
+    function save(newRound) {
+      var d = data(); if (!d.openAt || !d.closeAt || tsMs(d.closeAt) <= tsMs(d.openAt)) { m.className = "msg bad"; m.textContent = "열리는 시각과 마감 시각을 넣어 주세요. 마감은 열림보다 뒤여야 합니다."; return; }
+      var round = (!newRound && sv.round) || "r" + new Date(Date.now() + 9 * 36e5).toISOString().slice(0, 16).replace(/\D/g, ""), p = Promise.resolve();
+      if (round !== sv.round) p = db.doc("rounds/" + round + "/meta/counts").set({ c: {} });
+      d.round = round;
+      p.then(function () { return db.doc("survey/current").set(d); }).then(function () { m.className = "msg good"; m.textContent = newRound ? "새 회차를 시작했습니다. 신청 수는 0부터 다시 셉니다." : "저장했습니다."; }, fail);
+    }
+    var fresh = h("button", { class: "btn danger", type: "button", onclick: function () { if (fresh.dataset.sure) save(true); else { fresh.dataset.sure = "1"; fresh.textContent = "한 번 더 누르면 새 회차가 시작됩니다"; } } }, "새 회차 시작");
+    view.appendChild(h("h2", { text: "회차 설정" }));
+    view.appendChild(h("div", { class: "form" }, h("label", { class: "wide" }, "조사 이름", F.title), h("label", { class: "wide" }, "학부모에게 보이는 안내문", F.notice),
+      h("label", null, "열리는 시각", F.openAt), h("label", null, "마감 시각", F.closeAt), h("label", null, "한 시간 정원 (기본)", F.cap),
+      h("label", null, "학부모 화면", h("div", { class: "checks" }, h("label", null, F.visible, "링크를 열면 이 조사가 보이게 하기"))),
+      h("div", { class: "wide row" }, h("button", { class: "btn pri", type: "button", onclick: function () { save(!sv.round); } }, sv.round ? "설정 저장" : "조사 만들기"), sv.round ? fresh : null,
+        sv.round && st.key === "open" ? h("button", { class: "btn", type: "button", onclick: function () { db.doc("survey/current").update({ closeAt: firebase.firestore.Timestamp.now() }).then(function () { m.className = "msg good"; m.textContent = "마감했습니다."; }, fail); } }, "지금 마감") : null, m),
+      h("p", { class: "wide msg", text: "시간표 현황에서 정원을 10명이 아니게 바꿔 둔 칸은 그 정원이 그대로 쓰입니다. 학부모에게는 아래 주소 하나만 보내면 됩니다." }),
+      h("div", { class: "wide row" }, h("code", { text: link }), h("button", { class: "btn", type: "button", onclick: function (e) { var b = e.currentTarget; (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject()).then(function () { b.textContent = "복사했습니다"; }, function () { b.textContent = "주소를 길게 눌러 복사해 주세요"; }); } }, "주소 복사"),
+        h("a", { class: "btn", href: link, target: "_blank", rel: "noopener" }, "학부모 화면 열어 보기"))));
+    if (!sv.round) return;
+
+    var waitN = R.list.filter(function (s) { return s.waits; }).length, notYet = active().filter(function (x) { return !subs.some(function (s) { return s.name === x.name; }); }).sort(byName);
+    view.appendChild(h("h2", { text: "접수 현황" }));
+    view.appendChild(h("div", { class: "box kv" }, [[subs.length + "건", "접수"], [R.list.filter(function (s) { return s.kind === "재원생"; }).length + "건", "재원생"], [R.list.filter(function (s) { return s.kind !== "재원생"; }).length + "건", "형제 · 신규"], [waitN + "건", "대기가 낀 신청"], [notYet.length + "명", "아직 신청 안 한 재원생"]].map(function (x) { return h("div", null, h("b", { text: x[0] }), h("span", { text: x[1] })); })));
+    var TABS = [["order", "접수 순서"], ["grid", "칸별 현황"], ["none", "미신청 재원생"]];
+    view.appendChild(h("div", { class: "tabs", style: "margin-top:16px" }, TABS.map(function (v) { return h("button", { type: "button", class: svTab === v[0] ? "on" : "", text: v[1], onclick: function () { svTab = v[0]; surveyView(); } }); })));
+    var m2 = h("span", { class: "msg" });
+    if (svTab === "order") {
+      var tb = h("tbody");
+      R.list.forEach(function (s) {
+        var d = desk[s.id] || {}, sel = h("select", { "aria-label": "처리", onchange: function (e) { db.doc("rounds/" + sv.round + "/desk/" + s.id).set({ status: e.target.value }, { merge: true }); } }, ["접수", "배정 완료", "대기 명단", "보류"].map(function (o) { return h("option", { value: o, selected: (d.status || "접수") === o, text: o }); }));
+        tb.appendChild(h("tr", null, h("td", { class: "num", text: s.no }), h("td", { text: kstText(tsMs(s.at), true) }), h("td", null, s.name, s.check ? h("span", { class: "tag w", style: "margin-left:6px", text: s.check }) : null), h("td", { text: s.kind }), h("td", { text: s.grade }), h("td", { class: "num", text: s.weekly }),
+          h("td", null, (s.slots || []).map(function (id) { var w = s.rank[id] - svCap(id); return h("span", { class: "tag" + (w > 0 ? " w" : ""), style: "margin:0 4px 2px 0", text: slotName(id) + (w > 0 ? " 대기" + w : "") }); })),
+          h("td", { text: s.phone || "" }), h("td", { text: s.memo || "" }), h("td", null, sel)));
+      });
+      view.appendChild(R.list.length ? h("div", { class: "scroll" }, h("table", { class: "plain" }, h("thead", null, h("tr", null, ["순번", "접수 시각", "이름", "구분", "학년", "주", "신청 시간", "연락처", "요청", "처리"].map(function (x) { return h("th", { text: x }); }))), tb)) : h("p", { class: "empty", text: "아직 들어온 신청이 없습니다." }));
+    } else if (svTab === "grid") {
+      var g = h("div", { class: "tt" }, h("div")); DAYS.forEach(function (d) { g.appendChild(h("div", { class: "h", text: d[1] })); });
+      TIMES.forEach(function (t) { g.appendChild(h("div", { class: "t", text: t })); DAYS.forEach(function (d) {
+        var id = slotId(d[0], t), c = svCap(id), list = R.bySlot[id] || [];
+        g.appendChild(h("div", { class: "cell" + (list.length >= c ? " full" : list.length === 0 ? " none" : ""), style: "cursor:default" }, h("span", { class: "n", text: list.length + " / " + c }),
+          h("span", { class: "names", text: list.slice(0, c).map(function (s) { return s.name; }).join(", ") }), list.length > c ? h("span", { class: "names", style: "display:block;color:var(--warn)", text: "대기: " + list.slice(c).map(function (s) { return s.name; }).join(", ") }) : null));
+      }); });
+      view.appendChild(h("div", { style: "overflow-x:auto" }, g));
+    } else {
+      view.appendChild(notYet.length ? table(notYet, ["이름", "학년", "지금 시간", "보호자 연락처"], function (s) { return [s.name, grade(s), sortSlots(s.slots).map(slotName).join(" · "), s.guardianPhone || ""]; }, "survey") : h("p", { class: "empty", text: "재원생이 모두 신청했습니다." }));
+    }
+
+    view.appendChild(h("h2", { text: "마감 뒤 정리" }));
+    var out = h("div");
+    view.appendChild(h("div", { class: "row" },
+      h("button", { class: "btn", type: "button", onclick: function () { var b = db.batch(); R.list.forEach(function (s) { b.set(db.doc("rounds/" + sv.round + "/desk/" + s.id), { status: s.waits ? "대기 명단" : "배정 완료" }, { merge: true }); }); b.commit().then(function () { m2.className = "msg good"; m2.textContent = "가배정대로 처리 칸을 채웠습니다. 한 건씩 바꿀 수 있습니다."; }, function () { m2.className = "msg bad"; m2.textContent = "저장하지 못했습니다."; }); } }, "가배정대로 처리 표시"),
+      h("button", { class: "btn", type: "button", onclick: preview }, "확정 결과를 시간표에 반영"),
+      h("button", { class: "btn", type: "button", onclick: csv }, "CSV 내려받기"),
+      h("button", { class: "btn", type: "button", onclick: function () { db.doc("rounds/" + sv.round + "/meta/counts").set({ c: R.n }).then(function () { m2.className = "msg good"; m2.textContent = "학부모 화면의 남은 자리를 실제 접수 건수로 다시 맞췄습니다."; }); } }, "남은 자리 다시 계산"), m2));
+    view.appendChild(out);
+    function csv() {
+      var rows = [["순번", "접수 시각", "이름", "구분", "학년", "주 횟수", "신청 시간", "대기", "연락처", "요청", "처리"]].concat(R.list.map(function (s) {
+        return [s.no, kstText(tsMs(s.at), true), s.name, s.kind, s.grade, s.weekly, s.slots.map(slotName).join(" / "), s.slots.filter(function (id) { return s.rank[id] > svCap(id); }).map(function (id) { return slotName(id) + " 대기" + (s.rank[id] - svCap(id)); }).join(" / "), s.phone, s.memo, (desk[s.id] || {}).status || "접수"]; }));
+      var text = "﻿" + rows.map(function (r) { return r.map(function (v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }).join(","); }).join("\r\n");
+      var a = h("a", { href: URL.createObjectURL(new Blob([text], { type: "text/csv" })), download: "시간표조사_" + sv.round + ".csv" }); document.body.appendChild(a); a.click(); a.remove();
+    }
+    function preview() {
+      var done = R.list.filter(function (s) { return (desk[s.id] || {}).status === "배정 완료"; }), hit = done.filter(function (s) { return s.match; }), miss = done.filter(function (s) { return !s.match; });
+      out.innerHTML = "";
+      out.appendChild(h("h2", { text: "시간표에 반영할 내용" }));
+      if (!done.length) { out.appendChild(h("p", { class: "empty", text: "처리가 '배정 완료'인 신청이 없습니다. 접수 순서 표에서 처리를 바꾸거나 '가배정대로 처리 표시'를 먼저 눌러 주세요." })); return; }
+      out.appendChild(h("p", { class: "msg", text: "'배정 완료' " + done.length + "건 중 명부의 재원생과 이름이 맞는 " + hit.length + "명의 수업 시간과 주 횟수를 아래처럼 바꿉니다. 비어 있는 보호자 연락처도 함께 채웁니다." }));
+      if (hit.length) out.appendChild(h("div", { class: "scroll" }, h("table", { class: "plain" }, h("thead", null, h("tr", null, ["이름", "지금", "바뀐 뒤"].map(function (x) { return h("th", { text: x }); }))), h("tbody", null, hit.map(function (s) {
+        return h("tr", null, h("td", { text: s.name }), h("td", { text: sortSlots(s.match.slots).map(slotName).join(" · ") || "없음" }), h("td", { text: sortSlots(s.slots).map(slotName).join(" · ") })); })))));
+      if (miss.length) out.appendChild(h("p", { class: "msg bad", text: "명부에서 찾지 못해 반영하지 않는 신청: " + miss.map(function (s) { return s.name + "(" + s.kind + ")"; }).join(", ") + " — 신규는 '신규 등록'에서 직접 넣어 주세요." }));
+      var m3 = h("span", { class: "msg" });
+      if (hit.length) out.appendChild(h("div", { class: "row", style: "margin-top:12px" }, h("button", { class: "btn pri", type: "button", onclick: function (e) {
+        var b = db.batch(), btn = e.currentTarget; btn.disabled = true;
+        hit.forEach(function (s) { var patch = { slots: sortSlots(s.slots), weeklyCount: s.slots.length }; if (!s.match.guardianPhone && s.phone) patch.guardianPhone = s.phone; b.update(db.collection("students").doc(s.match.id), patch); });
+        b.commit().then(function () { m3.className = "msg good"; m3.textContent = hit.length + "명의 시간표를 바꿨습니다. 시간표 현황에서 확인할 수 있습니다."; }, function () { btn.disabled = false; m3.className = "msg bad"; m3.textContent = "반영하지 못했습니다. 다시 눌러 주세요."; });
+      } }, hit.length + "명 시간표 바꾸기"), m3));
+    }
+  }
+
+  /* ── 공지사항 ── */
+  function noticeList() {
+    page("공지사항", "홈페이지 '공지' 자리에 나오는 글입니다. 글만 쓸 수 있고 사진은 넣지 않습니다.");
+    view.appendChild(h("div", { class: "row", style: "margin-bottom:14px" }, h("button", { class: "btn pri", type: "button", onclick: function () { route.back = "notices"; go("notice"); } }, "새 글 쓰기"), h("a", { class: "btn", href: "/#notice", target: "_blank", rel: "noopener" }, "홈페이지에서 보기")));
+    var list = notices.slice().sort(function (a, b) { return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || (b.date || "").localeCompare(a.date || ""); });
+    if (!list.length) { view.appendChild(h("p", { class: "empty", text: "아직 쓴 글이 없습니다. 여기서 쓴 글은 홈페이지에 처음부터 있던 공지 두 건 위에 차례로 나옵니다." })); return; }
+    var tb = h("tbody"); list.forEach(function (n) { tb.appendChild(h("tr", { tabindex: "0", onclick: function () { route.back = "notices"; go("notice", n.id); } }, h("td", { text: n.date || "" }), h("td", null, n.title, n.pinned ? h("span", { class: "tag", style: "margin-left:6px", text: "맨 위 고정" }) : null), h("td", { text: n.published ? "보임" : "숨김" }))); });
+    view.appendChild(h("div", { class: "scroll" }, h("table", null, h("thead", null, h("tr", null, ["날짜", "제목", "홈페이지"].map(function (x) { return h("th", { text: x }); }))), tb)));
+  }
+  function noticeForm(id) {
+    var n = id ? notices.filter(function (x) { return x.id === id; })[0] : { date: today(), published: true };
+    if (!n) return go("notices");
+    route.back = "notices"; page(id ? "공지 고치기" : "새 공지 쓰기", "저장하면 홈페이지에 바로 반영됩니다.");
+    var F = { title: h("input", { type: "text", value: n.title || "", maxlength: "80" }), date: h("input", { type: "date", value: n.date || today() }), body: h("textarea", { rows: "10", maxlength: "4000" }, n.body || ""),
+      published: h("input", { type: "checkbox", checked: n.published !== false }), pinned: h("input", { type: "checkbox", checked: !!n.pinned }) }, m = h("span", { class: "msg" });
+    var del = h("button", { class: "btn danger", type: "button", onclick: function () { if (!del.dataset.sure) { del.dataset.sure = "1"; del.textContent = "한 번 더 누르면 지워집니다"; return; } db.collection("notices").doc(id).delete().then(function () { go("notices"); }); } }, "글 지우기");
+    view.appendChild(h("form", { class: "form", onsubmit: function (e) {
+      e.preventDefault();
+      var d = { title: F.title.value.trim(), date: F.date.value || today(), body: F.body.value.trim(), published: F.published.checked, pinned: F.pinned.checked, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+      if (!d.title || !d.body) { m.className = "msg bad"; m.textContent = "제목과 내용을 적어 주세요."; return; }
+      (id ? db.collection("notices").doc(id).set(d) : db.collection("notices").add(d)).then(function () { go("notices"); }, function () { m.className = "msg bad"; m.textContent = "저장하지 못했습니다. 다시 눌러 주세요."; });
+    } }, h("label", { class: "wide" }, "제목", F.title), h("label", null, "날짜", F.date),
+      h("label", null, "보이기", h("div", { class: "checks" }, h("label", null, F.published, "홈페이지에 보이기"), h("label", null, F.pinned, "맨 위에 고정"))),
+      h("label", { class: "wide" }, "내용 (줄을 바꾸면 그대로 줄이 바뀝니다)", F.body),
+      h("div", { class: "wide row" }, h("button", { class: "btn pri", type: "submit" }, "저장"), id ? del : null, m)));
+  }
+
+  /* ── 이달의 클라비어 ── */
+  var AWARDS = ["에튀드상", "크레센도상"];
+  function prevMonth(ym) { var y = Number(ym.slice(0, 4)), m = Number(ym.slice(5, 7)) - 1; if (m < 1) { m = 12; y--; } return y + "-" + ("0" + m).slice(-2); }
+  function awardList() {
+    page("이달의 클라비어", "매달 상 받은 아이를 한 줄씩 적습니다. 같은 상은 두 달 연속 주지 않습니다.");
+    view.appendChild(h("div", { class: "row", style: "margin-bottom:14px" }, h("button", { class: "btn pri", type: "button", onclick: function () { route.back = "awards"; go("award"); } }, "수상 기록 쓰기")));
+    var list = awards.slice().sort(function (a, b) { return (b.month || "").localeCompare(a.month || "") || (a.award || "").localeCompare(b.award || "", "ko"); });
+    if (!list.length) { view.appendChild(h("p", { class: "empty", text: "아직 적은 수상 기록이 없습니다." })); return; }
+    var tb = h("tbody"); list.forEach(function (a) {
+      var st = students.filter(function (x) { return x.id === a.studentId; })[0], noOk = a.wall && st && (st.consent || []).indexOf("외벽 이름 게시") < 0;
+      tb.appendChild(h("tr", { tabindex: "0", onclick: function () { route.back = "awards"; go("award", a.id); } }, h("td", { text: a.month || "" }), h("td", { text: a.award || "" }), h("td", { text: a.studentName || "" }), h("td", { text: st ? grade(st) : "" }), h("td", { text: a.reason || "" }),
+        h("td", null, a.wall ? "게시" : "", noOk ? h("span", { class: "tag w", style: "margin-left:6px", text: "동의 확인 필요" }) : null)));
+    });
+    view.appendChild(h("div", { class: "scroll" }, h("table", null, h("thead", null, h("tr", null, ["수상 월", "상", "원생", "학년", "선정 이유", "외벽 게시"].map(function (x) { return h("th", { text: x }); }))), tb)));
+    var count = {}; awards.forEach(function (a) { if (a.studentName) count[a.studentName] = (count[a.studentName] || 0) + 1; });
+    var top = Object.keys(count).sort(function (a, b) { return count[b] - count[a] || a.localeCompare(b, "ko"); });
+    view.appendChild(h("h2", { text: "아이별 수상 횟수" }));
+    view.appendChild(h("p", { class: "msg", text: top.map(function (k) { return k + " " + count[k] + "회"; }).join(" · ") }));
+    var never = active().filter(function (s) { return !count[s.name]; }).sort(byName);
+    view.appendChild(h("h2", { text: "아직 받지 않은 재원생 " + never.length + "명" }));
+    view.appendChild(h("p", { class: "msg", text: never.map(function (s) { return s.name; }).join(" · ") || "모두 한 번 이상 받았습니다." }));
+  }
+  function awardForm(id) {
+    var a = id ? awards.filter(function (x) { return x.id === id; })[0] : { month: today().slice(0, 7), wall: false };
+    if (!a) return go("awards");
+    route.back = "awards"; page(id ? "수상 기록 고치기" : "수상 기록 쓰기", "외벽에 이름을 걸기 전, 아이의 '외벽 이름 게시' 동의를 확인합니다.");
+    var used = AWARDS.concat(awards.map(function (x) { return x.award; })).filter(function (x, i, arr) { return x && arr.indexOf(x) === i; });
+    var kids = active().sort(byName);
+    var F = { month: h("input", { type: "month", value: a.month || "" }), award: h("input", { type: "text", value: a.award || "", list: "award-names", maxlength: "20", placeholder: "예: 에튀드상" }),
+      student: h("select", null, [h("option", { value: "", text: "고르기" })].concat(kids.map(function (s) { return h("option", { value: s.id, selected: a.studentId === s.id, text: s.name + " (" + grade(s) + ")" }); }))),
+      reason: h("textarea", { rows: "3", maxlength: "300" }, a.reason || ""), wall: h("input", { type: "checkbox", checked: !!a.wall }) }, m = h("p", { class: "wide msg" }), warn = h("p", { class: "wide msg bad" });
+    if (a.studentId && !kids.some(function (s) { return s.id === a.studentId; })) F.student.appendChild(h("option", { value: a.studentId, selected: true, text: (a.studentName || "") + " (재원생 아님)" }));
+    function check() {
+      var st = students.filter(function (x) { return x.id === F.student.value; })[0], w = [], mo = F.month.value, aw = F.award.value.trim();
+      if (st && aw && mo && awards.some(function (x) { return x.id !== id && x.studentId === st.id && x.award === aw && (x.month === prevMonth(mo) || x.month === mo); })) w.push(st.name + " 아이는 지난달이나 이번 달에 이미 '" + aw + "'을 받았습니다. 같은 상은 두 달 연속 주지 않습니다.");
+      if (st && F.wall.checked && (st.consent || []).indexOf("외벽 이름 게시") < 0) w.push(st.name + " 아이는 명부에 '외벽 이름 게시' 동의가 없습니다. 동의를 받은 뒤 게시해 주세요.");
+      warn.textContent = w.join(" "); return st;
+    }
+    [F.month, F.award, F.student, F.wall].forEach(function (el) { el.addEventListener("change", check); });
+    var del = h("button", { class: "btn danger", type: "button", onclick: function () { if (!del.dataset.sure) { del.dataset.sure = "1"; del.textContent = "한 번 더 누르면 지워집니다"; return; } db.collection("awards").doc(id).delete().then(function () { go("awards"); }); } }, "기록 지우기");
+    view.appendChild(h("datalist", { id: "award-names" }, used.map(function (x) { return h("option", { value: x }); })));
+    view.appendChild(h("form", { class: "form", onsubmit: function (e) {
+      e.preventDefault(); var st = check();
+      if (!F.month.value || !F.award.value.trim() || !F.student.value) { m.className = "wide msg bad"; m.textContent = "수상 월, 상, 원생을 넣어 주세요."; return; }
+      var d = { month: F.month.value, award: F.award.value.trim(), studentId: F.student.value, studentName: st ? st.name : (a.studentName || ""), reason: F.reason.value.trim(), wall: F.wall.checked };
+      (id ? db.collection("awards").doc(id).set(d) : db.collection("awards").add(d)).then(function () { go("awards"); }, function () { m.className = "wide msg bad"; m.textContent = "저장하지 못했습니다. 다시 눌러 주세요."; });
+    } }, h("label", null, "수상 월", F.month), h("label", null, "상", F.award), h("label", null, "원생", F.student),
+      h("label", null, "외벽 게시", h("div", { class: "checks" }, h("label", null, F.wall, "외벽에 이름 걸기"))), h("label", { class: "wide" }, "선정 이유", F.reason), warn,
+      h("div", { class: "wide row" }, h("button", { class: "btn pri", type: "submit" }, "저장"), id ? del : null), m));
+    check();
+  }
+
   /* ── 시작 ── */
   function start(cfg) {
     firebase.initializeApp(cfg); db = firebase.firestore(); auth = firebase.auth();
     document.querySelector(".brand").addEventListener("click", function () { if (auth.currentUser) { route.back = null; go("home"); } });
     document.getElementById("logout").addEventListener("click", function () { auth.signOut(); });
     auth.onAuthStateChanged(function (u) {
-      unsubs.forEach(function (f) { f(); }); unsubs = []; students = []; slots = {};
+      unsubs.forEach(function (f) { f(); }); unsubs = []; students = []; slots = {}; subsUnsub.forEach(function (f) { f(); }); subsUnsub = []; subsRound = null; survey = null; subs = []; notices = []; awards = [];
       document.getElementById("who").hidden = !u;
       if (!u) return login();
       document.getElementById("who-id").textContent = (u.email || "").replace(DOMAIN, "");
@@ -477,6 +681,9 @@
       function denied() { auth.signOut().then(function () { login("이 계정은 운영실을 볼 권한이 없습니다."); }); }
       unsubs.push(db.collection("students").onSnapshot(function (snap) { students = snap.docs.map(function (d) { var x = d.data(); x.id = d.id; return x; }); if (++ready >= 2 || route.name !== "home" || ready) keep(); }, denied));
       unsubs.push(db.collection("slots").onSnapshot(function (snap) { slots = {}; snap.forEach(function (d) { slots[d.id] = d.data(); }); keep(); }, function () {}));
+      unsubs.push(db.doc("survey/current").onSnapshot(function (d) { survey = d.exists ? d.data() : null; watchRound(); if (route.name === "survey" || route.name === "home") keep(); }, function () {}));
+      unsubs.push(db.collection("notices").onSnapshot(function (snap) { notices = snap.docs.map(function (d) { var x = d.data(); x.id = d.id; return x; }); if (route.name === "notices" || route.name === "home") keep(); }, function () {}));
+      unsubs.push(db.collection("awards").onSnapshot(function (snap) { awards = snap.docs.map(function (d) { var x = d.data(); x.id = d.id; return x; }); if (route.name === "awards" || route.name === "home") keep(); }, function () {}));
       function keep() { var a = document.activeElement; if (a && /INPUT|TEXTAREA|SELECT/.test(a.tagName) && view.contains(a)) return; render(); }
     });
   }

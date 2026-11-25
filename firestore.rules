@@ -1,15 +1,46 @@
 rules_version = '2';
-// 세종 클라비어 음악학원 — 1단계(원생 명부 · 시간표) 규칙.
-// 원생 자료는 관리자 계정으로 로그인했을 때만 읽고 쓸 수 있습니다.
-// 이 내용을 Firebase 콘솔 → Firestore Database → 규칙 탭에 붙여 넣고 게시합니다.
 service cloud.firestore {
   match /databases/{db}/documents {
     function isAdmin() {
       return request.auth != null
         && request.auth.token.email in ['klavier@klavier.admin', 'klavier2@klavier.admin'];
     }
-    match /{document=**} {
-      allow read, write: if isAdmin();
+    // 운영실 계정은 모든 자료를 읽고 씁니다.
+    match /{document=**} { allow read, write: if isAdmin(); }
+
+    // 홈페이지 공지: 보이기로 둔 글만 누구나 읽습니다.
+    match /notices/{id} { allow read: if resource.data.published == true; }
+
+    // 시간표 조사: 회차 안내와 칸별 신청 수(이름 없음)는 누구나 읽습니다.
+    function survey() { return get(/databases/$(db)/documents/survey/current).data; }
+    function isOpen(r) {
+      let s = survey();
+      return s.visible == true && s.round == r && request.time >= s.openAt && request.time < s.closeAt;
+    }
+    function validSub(d) {
+      return d.keys().hasOnly(['name', 'kind', 'grade', 'weekly', 'slots', 'phone', 'memo', 'agree', 'at', 'pos'])
+        && d.name is string && d.name.size() >= 2 && d.name.size() <= 20
+        && d.kind in ['재원생', '형제 신규', '신규']
+        && d.grade is string && d.grade.size() <= 10
+        && d.weekly is int && d.weekly >= 1 && d.weekly <= 5
+        && d.slots is list && d.slots.size() == d.weekly
+        && d.phone is string && d.phone.size() >= 9 && d.phone.size() <= 20
+        && d.memo is string && d.memo.size() <= 300
+        && d.agree == true && d.pos is map;
+    }
+    match /survey/current { allow get: if true; }
+    match /rounds/{r}/meta/counts {
+      allow get: if true;
+      allow update: if isOpen(r) && request.resource.data.keys().hasOnly(['c']) && request.resource.data.c is map;
+    }
+    // 신청 한 건: 주소(이름+연락처로 만든 64자 열쇠)를 아는 사람만 그 한 건을 읽습니다. 목록은 운영실만 봅니다.
+    match /rounds/{r}/submissions/{id} {
+      allow get: if id.size() == 64;
+      allow create: if isOpen(r) && id.size() == 64 && validSub(request.resource.data) && request.resource.data.at == request.time;
+      allow update: if isOpen(r) && validSub(request.resource.data)
+        && (request.resource.data.at == request.time
+            || (request.resource.data.at == resource.data.at && request.resource.data.slots == resource.data.slots && request.resource.data.pos == resource.data.pos
+                && request.resource.data.name == resource.data.name && request.resource.data.phone == resource.data.phone));
     }
   }
 }
