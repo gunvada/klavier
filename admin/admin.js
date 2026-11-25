@@ -515,7 +515,7 @@
       var round = (!newRound && sv.round) || "r" + new Date(Date.now() + 9 * 36e5).toISOString().slice(0, 16).replace(/\D/g, ""), p = Promise.resolve();
       if (round !== sv.round) p = db.doc("rounds/" + round + "/meta/counts").set({ c: {} });
       d.round = round;
-      p.then(function () { return db.doc("survey/current").set(d); }).then(function () { m.className = "msg good"; m.textContent = newRound ? "새 회차를 시작했습니다. 신청 수는 0부터 다시 셉니다." : "저장했습니다."; }, fail);
+      p.then(function () { return db.doc("survey/current").set(d); }).then(function () { m.className = "msg good"; m.textContent = newRound ? "새 회차를 시작했습니다. 신청 수는 0부터 다시 셉니다." : "저장했습니다."; delete fresh.dataset.sure; fresh.textContent = "새 회차 시작"; }, fail);
     }
     var fresh = h("button", { class: "btn danger", type: "button", onclick: function () { if (fresh.dataset.sure) save(true); else { fresh.dataset.sure = "1"; fresh.textContent = "한 번 더 누르면 새 회차가 시작됩니다"; } } }, "새 회차 시작");
     view.appendChild(h("h2", { text: "회차 설정" }));
