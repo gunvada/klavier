@@ -254,8 +254,8 @@
       ["휴원", "퇴원"].forEach(function (st) {
         var list = students.filter(function (s) { return s.status === st && (!q || match(s, q)); }).sort(function (a, b) { return (b.leftOn || "").localeCompare(a.leftOn || "") || byName(a, b); });
         out.appendChild(h("h2", { text: st + "생 " + (q ? "검색 결과 " : "") + list.length + "명" }));
-        out.appendChild(list.length ? table(list, ["이름", "학년", "교재", "등록일", st === "퇴원" ? "퇴원일" : "", st === "퇴원" ? "퇴원 사유" : "", "재원 개월"], function (s) {
-          return [s.name, grade(s), s.book || "", s.enrolledOn || "", s.leftOn || "", (s.leaveReasons || []).join(", "), months(s) == null ? "" : months(s) + "개월"];
+        out.appendChild(list.length ? table(list, ["이름", "학교", "학년", "주 횟수", "교재", "등록일", st === "퇴원" ? "퇴원일" : "", st === "퇴원" ? "퇴원 사유" : "", "재원 개월"], function (s) {
+          return [s.name, s.school || "", grade(s), s.weeklyCount ? String(s.weeklyCount) : "", s.book || "", s.enrolledOn || "", s.leftOn || "", (s.leaveReasons || []).join(", "), months(s) == null ? "" : months(s) + "개월"];
         }, "gone") : h("p", { class: "empty", text: q ? "검색된 아이가 없습니다." : "없습니다." }));
       });
     }
