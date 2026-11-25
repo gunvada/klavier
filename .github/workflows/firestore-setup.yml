@@ -1,0 +1,28 @@
+name: Set up Firestore
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Firebase tools
+        run: npm install -g firebase-tools
+      - name: Create the database and publish rules
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          printf '%s' "$SA" > "$RUNNER_TEMP/sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          echo "== databases before =="
+          firebase firestore:databases:list --project klavier-academy || true
+          echo "== create (skipped if it exists) =="
+          firebase firestore:databases:create "(default)" --location asia-northeast3 --project klavier-academy || echo "create step did not complete"
+          echo "== publish rules =="
+          firebase deploy --only firestore:rules --project klavier-academy
+          rm -f "$RUNNER_TEMP/sa.json"

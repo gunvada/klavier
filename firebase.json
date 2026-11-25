@@ -9,5 +9,8 @@
       "README.md",
       "firestore.rules"
     ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
   }
 }
