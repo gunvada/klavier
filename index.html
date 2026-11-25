@@ -470,13 +470,8 @@ main > section[id], main > div[id], main [id="flow"], main [id="books"], main [i
 .notices .body .pre { white-space: pre-line; }
 .notices .body img { display: block; max-width: 100%; height: auto; margin-top: 14px; border-radius: 2px; }
 .notice-empty { padding-block: 28px; color: var(--text-2); }
-.nav.one { gap: 8px; flex-wrap: nowrap; }
-.nav.one a.survey-link { width: auto; padding: 6px 14px; border: 1px solid var(--text); border-radius: 2px; font-weight: 500; white-space: nowrap; }
-.nav.one a.survey-link[hidden] { display: none; }
-.nav.one a.call { white-space: nowrap; }
 .legal a.staff { color: inherit; text-decoration: none; opacity: .65; }
 .legal a.staff:hover { opacity: 1; text-decoration: underline; }
-@media (max-width: 480px) { .nav.one a.survey-link:not([hidden]) + a.call { display: none; } }
 </style>
 </head>
 <body>
@@ -484,7 +479,6 @@ main > section[id], main > div[id], main [id="flow"], main [id="books"], main [i
   <div class="wrap">
     <a class="logo" href="#top" aria-label="세종 클라비어 음악학원 — 맨 위로"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2753 560"><g transform="translate(120.0 120.0) scale(0.45714)"><path d="M442.0 25.9 L511.4 419.6 L478.7 425.4 L514.8 700.0 L639.9 700.0 L549.3 11.8 L442.0 25.9 Z M435.8 432.9 L403.1 438.7 L333.6 45.0 L243.4 65.0 L346.8 451.2 L314.7 459.8 L368.0 700.0 L495.0 700.0 L435.8 432.9 Z M272.7 471.1 L240.6 479.7 L137.1 93.5 L33.9 126.0 L214.8 700.0 L344.9 700.0 L272.7 471.1 Z M1547.4 126.0 L1429.1 88.7 L1236.4 700.0 L1366.4 700.0 L1547.4 126.0 Z M1353.3 68.4 L1247.6 45.0 L1178.2 438.7 L1145.5 432.9 L1086.3 700.0 L1213.3 700.0 L1353.3 68.4 Z M1102.6 425.4 L1069.9 419.6 L1139.3 25.9 L1047.6 13.8 L1012.8 412.1 L979.7 409.2 L941.4 700.0 L1066.4 700.0 L1102.6 425.4 Z M936.3 405.4 L903.2 402.5 L938.0 4.2 L845.6 0.2 L845.6 400.0 L812.4 400.0 L799.3 700.0 L923.4 700.0 L936.3 405.4 Z M768.9 400.0 L735.6 400.0 L735.6 0.2 L627.5 4.9 L657.8 700.0 L782.0 700.0 L768.9 400.0 Z" fill="currentColor" fill-rule="evenodd"></path></g><path transform="translate(962.87 380.00) scale(0.28571 -0.28571)" d="M119 73V627Q118 653 99.5 671.5Q81 690 55 690H42V700H346V690H333Q307 690 288.5 671.5Q270 653 269 627V73Q270 47 288.5 28.5Q307 10 333 10H346V0H42V10H55Q81 10 99.5 28.5Q118 47 119 73ZM734 700V691H730Q697 691 668 678Q645 667 627 649L427 412L675 72Q698 42 722.0 26.5Q746 11 777 10V0H695Q684 0 658.5 1.0Q633 2 601.0 9.0Q569 16 536.5 33.5Q504 51 480 83Q475 90 460.0 110.0Q445 130 425.0 158.0Q405 186 383.5 215.5Q362 245 343 271L313 313L301 330L539 644Q551 661 543.0 676.0Q535 691 515 691H505V700Z" fill="currentColor"></path><path transform="translate(1239.15 380.00) scale(0.28571 -0.28571)" d="M606 204 560 0H42V10H55Q81 10 99.5 28.5Q118 47 119 73V627Q118 653 99.5 671.5Q81 690 55 690H42V700H346V690H333Q307 690 288.5 671.5Q270 653 269 627V43H400Q450 43 488.0 62.5Q526 82 553.0 118.5Q580 155 596 204Z" fill="currentColor"></path><path transform="translate(1475.44 380.00) scale(0.28571 -0.28571)" d="M354 720 654 65Q669 37 690 25Q714 10 737 10H745V0H427V10H436Q456 10 471.0 26.5Q486 43 474 73H475L426 196H190L139 73Q131 53 136.0 39.0Q141 25 153.0 17.5Q165 10 177 10H186V0H-28V10H-19Q4 10 28 25Q48 36 63 62L296 589Q299 595 306.5 611.5Q314 628 322.5 649.0Q331 670 338.0 689.5Q345 709 345 720ZM310 485 208 238H409Z" fill="currentColor"></path><path transform="translate(1740.30 380.00) scale(0.28571 -0.28571)" d="M368 -20 68 627Q52 661 27.5 675.5Q3 690 -20 690H-28V700H290V690H281Q262 690 247.5 673.5Q233 657 244 627H243L412 214L589 627Q602 657 586.0 673.5Q570 690 551 690H542V700H756V690H747Q725 690 700.5 675.5Q676 661 660 627L426 111Q424 105 416.5 88.5Q409 72 400.0 51.0Q391 30 384.5 10.5Q378 -9 377 -20Z" fill="currentColor"></path><path transform="translate(2008.30 380.00) scale(0.28571 -0.28571)" d="M119 73V627Q118 653 99.5 671.5Q81 690 55 690H42V700H346V690H333Q307 690 288.5 671.5Q270 653 269 627V73Q270 47 288.5 28.5Q307 10 333 10H346V0H42V10H55Q81 10 99.5 28.5Q118 47 119 73Z" fill="currentColor"></path><path transform="translate(2178.87 380.00) scale(0.28571 -0.28571)" d="M606 204 560 0H42V10H55Q81 10 99.5 28.5Q118 47 119 73V627Q118 653 99.5 671.5Q81 690 55 690H42V700H423Q445 700 469.5 703.0Q494 706 515.0 710.0Q536 714 545 718V543H535V555Q535 601 508 629Q485 652 448 657H269V366H401Q438 367 462.0 391.5Q486 416 486 452V460H496V230H486V239Q486 275 462.0 299.0Q438 323 401 324H269V43H400Q450 43 488.0 62.5Q526 82 553.0 118.5Q580 155 596 204Z" fill="currentColor"></path><path transform="translate(2419.44 380.00) scale(0.28571 -0.28571)" d="M122 73V627Q121 653 102.5 671.5Q84 690 58 690H45V700H388Q433 700 476.0 690.0Q519 680 552.5 658.0Q586 636 606.0 600.0Q626 564 626 511Q626 469 608.5 427.5Q591 386 555.0 356.5Q519 327 462 321Q494 311 520.5 285.0Q547 259 564 233Q565 231 575.5 215.0Q586 199 601.5 175.5Q617 152 634.0 128.0Q651 104 665 86Q687 59 705.0 42.5Q723 26 743.0 18.5Q763 11 789 10V0H691Q637 0 593.0 10.0Q549 20 515.0 42.5Q481 65 456 104Q448 116 438.5 134.5Q429 153 419.0 174.0Q409 195 399.5 214.5Q390 234 383.0 250.0Q376 266 373 275Q360 307 342.5 323.0Q325 339 305 342V352Q308 352 317.0 352.0Q326 352 336 352Q363 352 388.5 363.0Q414 374 434.0 399.0Q454 424 462 468Q464 477 465.5 489.0Q467 501 466 516Q463 588 430.0 621.5Q397 655 348 656Q334 657 317.5 656.5Q301 656 288 656H272V73Q272 47 291.0 28.5Q310 10 336 10H348V0H45V10H58Q84 10 102.5 28.5Q121 47 122 73Z" fill="currentColor"></path></svg></a>
     <nav class="nav one" aria-label="연락">
-      <a class="survey-link" href="/schedule/" hidden>시간표 조사</a>
       <a class="call" href="tel:01044884763">010-4488-4763</a>
     </nav>
   </div>
@@ -961,13 +955,6 @@ main > section[id], main > div[id], main [id="flow"], main [id="books"], main [i
         });
       });
     }).catch(function () { empty("공지를 불러오지 못했습니다. 잠시 뒤 다시 열어 주세요."); });
-})();
-</script>
-<script>
-(function () {
-  var a = document.querySelector(".survey-link"); if (!a || !window.fetch) return;
-  fetch("https://firestore.googleapis.com/v1/projects/klavier-academy/databases/(default)/documents/survey/current").then(function (r) { return r.ok ? r.json() : null; })
-    .then(function (d) { if (d && d.fields && d.fields.visible && d.fields.visible.booleanValue === true) a.hidden = false; }).catch(function () {});
 })();
 </script>
 </body>
