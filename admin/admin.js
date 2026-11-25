@@ -515,9 +515,9 @@
       var round = (!newRound && sv.round) || "r" + new Date(Date.now() + 9 * 36e5).toISOString().slice(0, 16).replace(/\D/g, ""), p = Promise.resolve();
       if (round !== sv.round) p = db.doc("rounds/" + round + "/meta/counts").set({ c: {} });
       d.round = round;
-      p.then(function () { return db.doc("survey/current").set(d); }).then(function () { m.className = "msg good"; m.textContent = newRound ? "새 회차를 시작했습니다. 신청 수는 0부터 다시 셉니다." : "저장했습니다."; delete fresh.dataset.sure; fresh.textContent = "새 회차 시작"; }, fail);
+      p.then(function () { return db.doc("survey/current").set(d); }).then(function () { m.className = "msg good"; m.textContent = newRound ? "새로고침했습니다. 받은 신청을 비우고 0부터 다시 받습니다." : "저장했습니다."; delete fresh.dataset.sure; fresh.textContent = "새로고침"; }, fail);
     }
-    var fresh = h("button", { class: "btn danger", type: "button", onclick: function () { if (fresh.dataset.sure) save(true); else { fresh.dataset.sure = "1"; fresh.textContent = "한 번 더 누르면 새 회차가 시작됩니다"; } } }, "새 회차 시작");
+    var fresh = h("button", { class: "btn danger", type: "button", onclick: function () { if (fresh.dataset.sure) save(true); else { fresh.dataset.sure = "1"; fresh.textContent = "한 번 더 누르면 받은 신청을 비우고 처음부터 다시 받습니다"; } } }, "새로고침");
     view.appendChild(h("h2", { text: "회차 설정" }));
     view.appendChild(h("div", { class: "form" }, h("label", { class: "wide" }, "조사 이름", F.title), h("label", { class: "wide" }, "학부모에게 보이는 안내문", F.notice),
       h("label", null, "열리는 시각", F.openAt), h("label", null, "마감 시각", F.closeAt), h("label", null, "한 시간 정원 (기본)", F.cap),
