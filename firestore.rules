@@ -1,0 +1,15 @@
+rules_version = '2';
+// 세종 클라비어 음악학원 — 1단계(원생 명부 · 시간표) 규칙.
+// 원생 자료는 관리자 계정으로 로그인했을 때만 읽고 쓸 수 있습니다.
+// 이 내용을 Firebase 콘솔 → Firestore Database → 규칙 탭에 붙여 넣고 게시합니다.
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email in ['klavier@klavier.admin', 'klavier2@klavier.admin'];
+    }
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

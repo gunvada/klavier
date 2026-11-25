@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>클라비어 운영실</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@700;900&display=swap">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<header class="top">
+  <button class="brand" type="button" data-go="home">KLAVIER 운영실</button>
+  <div class="who" id="who" hidden><span id="who-id"></span><button type="button" id="logout">로그아웃</button></div>
+</header>
+<main id="view"><p class="wait">불러오는 중입니다.</p></main>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
