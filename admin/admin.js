@@ -11,7 +11,7 @@
   var SOURCES = ["재원생 소개", "지인 소개", "네이버 검색·플레이스", "맘카페", "블로그", "인스타그램", "간판·외벽", "이사 와서 찾음", "기타"];
   var WATCH = ["연습 횟수 감소", "같은 곡 3주 이상", "평가 하락", "결석·지각 증가", "다른 학원 시간 언급", "이탈 구간 학년", "형제 퇴원", "친구들과 마찰", "수업 태도 불량"];
   var LEAVE = ["다른 학원 시간", "흥미 저하", "난이도·악보", "비용", "이사", "다른 피아노 학원", "기타"];
-  var FEES = { "초급": [110000, 120000, 130000, 140000], "중급": [120000, 130000, 140000, 150000], "고급": [130000, 140000, 150000, 160000] };
+  var FEES = { "초급": [110000, 120000, 130000, 140000, 150000], "중급": [120000, 130000, 140000, 150000, 160000], "고급": [130000, 140000, 150000, 160000, 170000] };
   var DOMAIN = "@klavier.admin";
 
   var db, auth, students = [], slots = {}, unsubs = [], route = { name: "home" }, filters = {};
@@ -53,10 +53,11 @@
   }
   function gradeOrder(s) { var i = GRADES.indexOf(grade(s)); return i < 0 ? 99 : i; }
   function stage(s) { var b = s.book || ""; return !b ? "" : b.indexOf("바이엘") === 0 ? "초급" : (b === "체르니100" || b === "체르니30") ? "중급" : "고급"; }
+  function ruleFee(s) { var row = FEES[stage(s)], n = Number(s.weeklyCount); return row && n >= 1 && n <= row.length ? row[n - 1] : null; }
   function fee(s) {
-    if (s.feeException != null && s.feeException !== "") return Number(s.feeException);
-    var row = FEES[stage(s)], n = Number(s.weeklyCount);
-    return row && n >= 1 && n <= 4 ? row[n - 1] : null; // 주 5회는 금액표에 없습니다 [확인 필요]
+    if (Number(s.fee) > 0) return Number(s.fee);
+    if (Number(s.feeException) > 0) return Number(s.feeException);
+    return ruleFee(s);
   }
   function months(s) {
     if (!s.enrolledOn) return null;
@@ -273,9 +274,12 @@
       name: inp("text", s.name), gradeInput: select(GRADES, isNew ? "" : grade(s), "고르기"), school: select(SCHOOLS, s.school, "고르기"),
       weeklyCount: select([1, 2, 3, 4, 5], s.weeklyCount, "고르기"), book: select(BOOKS, s.book, "고르기"), bookChangedOn: inp("date", s.bookChangedOn),
       enrolledOn: inp("date", s.enrolledOn), consent: checks(CONSENTS, s.consent), payer: inp("text", s.payer),
-      source: select(SOURCES, s.source, "고르기"), guardian: inp("text", s.guardian), guardianPhone: inp("tel", s.guardianPhone), feeException: inp("number", s.feeException, { min: "0", step: "1000" }),
+      source: select(SOURCES, s.source, "고르기"), guardian: inp("text", s.guardian), guardianPhone: inp("tel", s.guardianPhone), fee: inp("number", fee(s) || "", { min: "0", step: "1000" }),
       watch: h("input", { type: "checkbox", checked: !!s.watch }), watchReasons: checks(WATCH, s.watchReasons), memo: h("textarea", null, s.memo || "")
     };
+    var lastRule = ruleFee(s);
+    function refill() { var r = ruleFee({ book: F.book.value, weeklyCount: F.weeklyCount.value }); if (F.fee.value === "" || Number(F.fee.value) === lastRule) F.fee.value = r || ""; lastRule = r; }
+    F.book.addEventListener("change", refill); F.weeklyCount.addEventListener("change", refill);
     var pickMsg = h("p", { class: "msg" });
     var grid = h("div", { class: "pick" });
     DAYS.forEach(function (d) {
@@ -298,7 +302,7 @@
       h("div", { class: "wide" }, h("label", null, "수업 요일 · 시간"), grid, pickMsg),
       L("등록일 (첫 수업일)", F.enrolledOn), h("div", { class: "wide" }, h("label", null, "학부모 동의"), F.consent),
       L("결제하실 분", F.payer), L("알게 된 경로", F.source), L("보호자", F.guardian), L("보호자 연락처", F.guardianPhone),
-      L("수강료 예외 (원, 규칙과 다를 때만)", F.feeException), h("label", null, "주의 원생", h("div", { class: "checks" }, h("label", null, F.watch, "주의해서 볼 아이"))),
+      L("수강료 (원)", F.fee), h("label", null, "주의 원생", h("div", { class: "checks" }, h("label", null, F.watch, "주의해서 볼 아이"))),
       h("div", { class: "wide" }, h("label", null, "주의 사유"), F.watchReasons), L("메모", F.memo, true),
       h("div", { class: "row wide" }, h("button", { class: "btn pri", type: "submit" }, isNew ? "등록" : "저장"), m));
     view.appendChild(form);
@@ -313,7 +317,7 @@
       if (dup.length && !form.dataset.dupOk) { form.dataset.dupOk = "1"; m.className = "msg bad"; m.textContent = "같은 이름의 원생이 이미 있습니다(" + dup[0].status + "). 형제나 동명이인이 맞으면 한 번 더 눌러 주세요."; return; }
       var data = { name: name, gradeInput: F.gradeInput.value, gradeYear: schoolYear(), school: F.school.value, weeklyCount: w, book: F.book.value, bookChangedOn: F.bookChangedOn.value || null,
         enrolledOn: F.enrolledOn.value || null, consent: read(F.consent), payer: F.payer.value.trim(), source: F.source.value, guardian: F.guardian.value.trim(),
-        guardianPhone: F.guardianPhone.value.trim(), feeException: F.feeException.value === "" ? null : Number(F.feeException.value), watch: F.watch.checked, watchReasons: read(F.watchReasons), memo: F.memo.value.trim(), slots: sl };
+        guardianPhone: F.guardianPhone.value.trim(), fee: Number(F.fee.value) > 0 && Number(F.fee.value) !== ruleFee({ book: F.book.value, weeklyCount: w }) ? Number(F.fee.value) : null, feeException: null, watch: F.watch.checked, watchReasons: read(F.watchReasons), memo: F.memo.value.trim(), slots: sl };
       if (isNew) data.bookChangedOn = data.book ? (data.enrolledOn || today()) : null;
       else if (s.book !== data.book && (F.bookChangedOn.value || null) === (s.bookChangedOn || null)) data.bookChangedOn = today();
       m.className = "msg"; m.textContent = "저장하는 중입니다.";
@@ -433,9 +437,9 @@
       out.innerHTML = "";
       if (head.indexOf("이름") < 0) { out.appendChild(h("p", { class: "msg bad", text: "'이름' 칸이 없는 파일입니다. 원생 명부를 내보낸 CSV가 맞는지 확인해 주세요." })); return; }
       var data = rows.filter(function (r) { return col(r, "이름"); }).map(function (r) {
-        var st = col(r, "상태") || "재원", fx = col(r, "수강료 예외").replace(/[^0-9]/g, "");
+        var st = col(r, "상태") || "재원", fx = (col(r, "수강료") || col(r, "수강료 예외")).replace(/[^0-9]/g, "");
         return { name: col(r, "이름"), status: st, gradeInput: col(r, "입력 학년") || col(r, "학년"), gradeYear: schoolYear(), school: col(r, "학교"), weeklyCount: Number(col(r, "주 횟수").replace(/[^0-9]/g, "")) || null,
-          book: col(r, "교재").replace(/\s/g, ""), bookChangedOn: parseDate(col(r, "교재 바꾼 날")), teacher: col(r, "담당"), enrolledOn: parseDate(col(r, "등록일")), feeException: fx ? Number(fx) : null,
+          book: col(r, "교재").replace(/\s/g, ""), bookChangedOn: parseDate(col(r, "교재 바꾼 날")), teacher: col(r, "담당"), enrolledOn: parseDate(col(r, "등록일")), fee: Number(fx) > 0 ? Number(fx) : null,
           payer: col(r, "결제하실 분"), guardian: col(r, "보호자"), guardianPhone: col(r, "보호자 연락처"), consent: list(col(r, "동의")), source: col(r, "알게 된 경로"), watch: /^(yes|true|예|체크)/i.test(col(r, "주의 원생")),
           watchReasons: list(col(r, "주의 사유")), leftOn: parseDate(col(r, "퇴원일")), leaveReasons: list(col(r, "퇴원 사유")), memo: col(r, "메모"), slots: st === "재원" ? parseSlots(col(r, "시간표")) : [] };
       });
