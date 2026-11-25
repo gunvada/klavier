@@ -589,27 +589,40 @@
   }
 
   /* ── 공지사항 ── */
+  var SEED = [
+    { tag: "안내", title: "2027년 새 공간으로 단장합니다", date: "2026-12-24", when: "2026. 12. 24 – 2027. 1. 3", pinned: false, published: true,
+      body: "실내를 새로 단장합니다. 아이들이 매일 머무는 공간이기에 벽 마감재까지 신중하게 골랐습니다. 자세한 내용은 시설소개에서 보실 수 있습니다.\n\n공사 기간: 2026년 12월 24일 – 2027년 1월 3일" },
+    { tag: "상시", title: "학원에 오실 때 부탁드리는 열 가지", date: "2026-01-01", when: "", pinned: false, published: true,
+      body: "1. 휴대폰은 가방에 넣어 둡니다.\n2. 수업 중에는 연락을 삼가 주세요.\n3. 간식은 학원 밖에서 먹습니다.\n4. 등원하면 손부터 씻습니다.\n5. 수업 시작 5분 전에 도착합니다.\n6. 데리러 오시면 복도에서 기다려 주세요.\n7. 결석과 지각은 미리 알려 주세요.\n8. 장난감과 귀중품은 집에 둡니다.\n9. 아플 때는 쉽니다.\n10. 연락처가 바뀌면 알려 주세요." }
+  ];
   function noticeList() {
     page("공지사항", "홈페이지 '공지' 자리에 나오는 글입니다. 글만 쓸 수 있고 사진은 넣지 않습니다.");
     view.appendChild(h("div", { class: "row", style: "margin-bottom:14px" }, h("button", { class: "btn pri", type: "button", onclick: function () { route.back = "notices"; go("notice"); } }, "새 글 쓰기"), h("a", { class: "btn", href: "/#notice", target: "_blank", rel: "noopener" }, "홈페이지에서 보기")));
     var list = notices.slice().sort(function (a, b) { return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || (b.date || "").localeCompare(a.date || ""); });
-    if (!list.length) { view.appendChild(h("p", { class: "empty", text: "아직 쓴 글이 없습니다. 여기서 쓴 글은 홈페이지에 처음부터 있던 공지 두 건 위에 차례로 나옵니다." })); return; }
-    var tb = h("tbody"); list.forEach(function (n) { tb.appendChild(h("tr", { tabindex: "0", onclick: function () { route.back = "notices"; go("notice", n.id); } }, h("td", { text: n.date || "" }), h("td", null, n.title, n.pinned ? h("span", { class: "tag", style: "margin-left:6px", text: "맨 위 고정" }) : null), h("td", { text: n.published ? "보임" : "숨김" }))); });
-    view.appendChild(h("div", { class: "scroll" }, h("table", null, h("thead", null, h("tr", null, ["날짜", "제목", "홈페이지"].map(function (x) { return h("th", { text: x }); }))), tb)));
+    if (!list.length) {
+      var sm = h("span", { class: "msg" });
+      view.appendChild(h("div", { class: "box" }, h("p", { text: "아직 쓴 글이 없어 홈페이지 공지 자리가 비어 있습니다. 전에 홈페이지에 있던 공지 두 건(새 공간 단장 안내, 학원에 오실 때 부탁드리는 열 가지)을 그대로 넣고 시작할 수 있습니다. 넣은 뒤에는 자유롭게 고치거나 지울 수 있습니다." }),
+        h("div", { class: "row" }, h("button", { class: "btn pri", type: "button", onclick: function (e) { e.currentTarget.disabled = true; var b = db.batch(); SEED.forEach(function (n) { b.set(db.collection("notices").doc(), n); }); b.commit().then(null, function () { sm.className = "msg bad"; sm.textContent = "넣지 못했습니다."; }); } }, "전에 있던 공지 두 건 넣기"), sm)));
+      return;
+    }
+    var tb = h("tbody"); list.forEach(function (n) { tb.appendChild(h("tr", { tabindex: "0", onclick: function () { route.back = "notices"; go("notice", n.id); } }, h("td", { text: n.date || "" }), h("td", { text: n.tag || "공지" }), h("td", null, n.title, n.pinned ? h("span", { class: "tag", style: "margin-left:6px", text: "맨 위 고정" }) : null), h("td", { text: n.published ? "보임" : "숨김" }))); });
+    view.appendChild(h("div", { class: "scroll" }, h("table", null, h("thead", null, h("tr", null, ["날짜", "구분", "제목", "홈페이지"].map(function (x) { return h("th", { text: x }); }))), tb)));
   }
   function noticeForm(id) {
     var n = id ? notices.filter(function (x) { return x.id === id; })[0] : { date: today(), published: true };
     if (!n) return go("notices");
     route.back = "notices"; page(id ? "공지 고치기" : "새 공지 쓰기", "저장하면 홈페이지에 바로 반영됩니다.");
-    var F = { title: h("input", { type: "text", value: n.title || "", maxlength: "80" }), date: h("input", { type: "date", value: n.date || today() }), body: h("textarea", { rows: "10", maxlength: "4000" }, n.body || ""),
+    var F = { tag: h("select", null, ["공지", "안내", "상시", "중요"].map(function (o) { return h("option", { value: o, selected: (n.tag || "공지") === o, text: o }); })), when: h("input", { type: "text", value: n.when || "", maxlength: "40", placeholder: "예: 2026. 12. 24 – 2027. 1. 3" }),
+      title: h("input", { type: "text", value: n.title || "", maxlength: "80" }), date: h("input", { type: "date", value: n.date || today() }), body: h("textarea", { rows: "10", maxlength: "4000" }, n.body || ""),
       published: h("input", { type: "checkbox", checked: n.published !== false }), pinned: h("input", { type: "checkbox", checked: !!n.pinned }) }, m = h("span", { class: "msg" });
     var del = h("button", { class: "btn danger", type: "button", onclick: function () { if (!del.dataset.sure) { del.dataset.sure = "1"; del.textContent = "한 번 더 누르면 지워집니다"; return; } db.collection("notices").doc(id).delete().then(function () { go("notices"); }); } }, "글 지우기");
     view.appendChild(h("form", { class: "form", onsubmit: function (e) {
       e.preventDefault();
-      var d = { title: F.title.value.trim(), date: F.date.value || today(), body: F.body.value.trim(), published: F.published.checked, pinned: F.pinned.checked, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+      var d = { tag: F.tag.value, when: F.when.value.trim(), title: F.title.value.trim(), date: F.date.value || today(), body: F.body.value.trim(), published: F.published.checked, pinned: F.pinned.checked, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
       if (!d.title || !d.body) { m.className = "msg bad"; m.textContent = "제목과 내용을 적어 주세요."; return; }
       (id ? db.collection("notices").doc(id).set(d) : db.collection("notices").add(d)).then(function () { go("notices"); }, function () { m.className = "msg bad"; m.textContent = "저장하지 못했습니다. 다시 눌러 주세요."; });
-    } }, h("label", { class: "wide" }, "제목", F.title), h("label", null, "날짜", F.date),
+    } }, h("label", { class: "wide" }, "제목", F.title), h("label", null, "구분 (제목 앞에 붙는 말)", F.tag), h("label", null, "날짜 (최신 글이 위로)", F.date),
+      h("label", null, "날짜 자리에 보일 글 (비우면 날짜, '상시'는 비움)", F.when),
       h("label", null, "보이기", h("div", { class: "checks" }, h("label", null, F.published, "홈페이지에 보이기"), h("label", null, F.pinned, "맨 위에 고정"))),
       h("label", { class: "wide" }, "내용 (줄을 바꾸면 그대로 줄이 바뀝니다)", F.body),
       h("div", { class: "wide row" }, h("button", { class: "btn pri", type: "submit" }, "저장"), id ? del : null, m)));
