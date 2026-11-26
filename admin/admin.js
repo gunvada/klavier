@@ -468,7 +468,7 @@
   }
 
   /* ── 시간표 신청 ── */
-  var NOTICE0 = "선생님 한 분이 한 시간에 다섯 명만 전담합니다.\n접수 순서대로 가배정하고, 정원이 찬 시간은 대기로 접수됩니다.\n아이 이름은 성까지 적어 주세요.\n오실 수 있는 요일만 골라 주세요.\n문의: 문자 010-4488-4763";
+  var NOTICE0 = "시간별 정원은 선착순으로 마감됩니다. (선생님 한 분당 5명)\n접수 순서대로 가배정되며, 정원이 찬 시간은 대기로 접수됩니다.\n요일마다 한 시간씩, 희망 횟수만큼 선택해 주세요.\n아이 이름은 성까지 정확히 입력해 주세요.\n마감 전까지 신청 내용을 수정할 수 있습니다. 시간을 바꾸면 접수 순서가 다시 매겨집니다.\n확정 시간표는 마감 후 개별 안내해 드립니다.\n문의: 문자 010-4488-4763";
   function tsMs(t) { return t && t.toMillis ? t.toMillis() : 0; }
   function kstInput(msv) { return msv ? new Date(msv + 9 * 36e5).toISOString().slice(0, 16) : ""; }
   function kstText(msv, sec) { return msv ? new Date(msv + 9 * 36e5).toISOString().slice(5, sec ? 19 : 16).replace("T", " ") : ""; }
@@ -528,7 +528,8 @@
     }
     var fresh = h("button", { class: "btn danger", type: "button", onclick: function () { if (fresh.dataset.sure) save(true); else { fresh.dataset.sure = "1"; fresh.textContent = "한 번 더 누르면 받은 신청을 비우고 처음부터 다시 받습니다"; } } }, "새로고침");
     view.appendChild(h("h2", { text: "신청 설정" }));
-    view.appendChild(h("div", { class: "form" }, h("label", { class: "wide" }, "신청 이름", F.title), h("label", { class: "wide" }, "학부모에게 보이는 안내문", F.notice),
+    view.appendChild(h("div", { class: "form" }, h("label", { class: "wide" }, "신청 이름", F.title), h("label", { class: "wide" }, "학부모에게 보이는 안내문 (한 줄에 한 가지씩)", F.notice),
+      h("div", { class: "wide row" }, h("button", { class: "btn", type: "button", onclick: function () { F.notice.value = NOTICE0; m.className = "msg"; m.textContent = "기본 안내문을 넣었습니다. '설정 저장'을 눌러야 학부모 화면에 반영됩니다."; } }, "기본 안내문으로 바꾸기")),
       h("label", null, "열리는 시각", F.openAt), h("label", null, "마감 시각", F.closeAt), h("label", null, "한 시간 정원 (기본)", F.cap),
       h("label", null, "학부모 화면", h("div", { class: "checks" }, h("label", null, F.visible, "링크를 열면 신청 화면이 보이게 하기"))),
       h("div", { class: "wide row" }, h("button", { class: "btn pri", type: "button", onclick: function () { save(!sv.round); } }, sv.round ? "설정 저장" : "신청 열기"), sv.round ? fresh : null,

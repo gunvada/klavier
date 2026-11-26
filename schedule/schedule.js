@@ -55,7 +55,7 @@
     view.innerHTML = ""; repaint = null;
     view.appendChild(h("h1", { text: ((S && S.title) || "시간표 신청").replace("시간표 조사", "시간표 신청") }));
     view.appendChild(h("p", { class: "state", text: stateText }));
-    if (S && S.notice) view.appendChild(h("p", { class: "notice", text: S.notice }));
+    if (S && S.notice) view.appendChild(h("div", { class: "notice" }, h("p", { class: "notice-h", text: "신청 안내" }), h("ul", null, S.notice.split(/\n+/).map(function (x) { return x.replace(/^[\s·•\-*]+/, "").trim(); }).filter(Boolean).map(function (x) { return h("li", { text: x }); }))));
   }
   function render() {
     if (phase === "none") { view.innerHTML = ""; view.appendChild(h("h1", { text: "시간표 신청" })); view.appendChild(h("div", { class: "card" }, h("p", { text: "지금은 시간표 신청 기간이 아닙니다." }), h("p", { class: "small", text: "신청이 시작되면 학원에서 따로 알려 드립니다." }))); return; }
