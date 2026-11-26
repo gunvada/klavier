@@ -558,7 +558,7 @@ img { -webkit-user-drag: none; user-drag: none; }
 .notices summary:focus-visible { outline: 2px solid var(--text); outline-offset: 4px; }
 @media (prefers-reduced-motion: reduce) { .notices summary i::before, .notices summary i::after { transition: none; } }
 
-@media (max-width: 860px) { .survey .phone { order: -1; margin-bottom: 8px; } }
+@media (max-width: 860px) { .survey { row-gap: 0; } .survey > div { display: contents; } .survey > div > .h3f { order: 1; } .survey > div > .sub { order: 2; } .survey .phone { order: 3; margin-block: 32px 4px; } .survey > div > .points { order: 4; } }
 </style>
 </head>
 <body>
