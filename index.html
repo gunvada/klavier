@@ -517,6 +517,20 @@ main h1, main h2, main h3, main dt, main figcaption, main .cap, main .stat dd.d,
 .unit { margin: 20px 0 -18px; text-align: right; font-size: 12.5px; color: var(--text-2); letter-spacing: 0.04em; }
 @media (max-width: 600px) { .stat dd { font-size: 1.85rem; } .stat dd small { display: inline-block; margin: 0 0 0 3px; font-size: 0.95rem; white-space: nowrap; } .stat dd.d { font-size: 13.5px; }
   #jury .stat dd small { display: block; margin: 4px 0 0; } }
+.plus { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px 64px; align-items: center; margin-top: 36px; }
+.plus .en { font-family: var(--font-display); font-style: italic; color: var(--text-2); }
+.plus .sub { max-width: 30em; }
+.weeks { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.weeks li { position: relative; display: grid; place-items: center; aspect-ratio: 1 / 1; border: 1px solid var(--text-2); border-radius: 2px; font-family: var(--font-serif-kr); font-weight: 700; font-size: clamp(0.95rem, 2.2vw, 1.2rem); }
+.weeks li.p { background: var(--text); border-color: var(--text); color: var(--bg); }
+.weeks li.p i { position: absolute; top: 6px; right: 8px; font-style: normal; font-family: var(--font-sans-kr); font-weight: 500; font-size: 1.1rem; line-height: 1; }
+.weeks-cap { display: grid; grid-template-columns: 4fr 1fr; gap: 6px; margin-top: 8px; font-size: 12.5px; color: var(--text-2); }
+.weeks-cap span { border-top: 1px solid var(--text-2); padding-top: 6px; text-align: center; }
+.weeks-cap span.p { border-top-color: var(--text); color: var(--text); font-weight: 500; white-space: nowrap; text-align: right; }
+.plus-num { margin-top: 24px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 20px; align-items: baseline; }
+.plus-num b { font-family: var(--font-serif-kr); font-weight: 900; font-size: 1.5rem; white-space: nowrap; }
+.plus-num span { color: var(--text-2); font-size: 15px; text-wrap: balance; }
+@media (max-width: 860px) { .plus { grid-template-columns: minmax(0, 1fr); } .weeks-cap { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 12px; } .weeks-cap span { text-align: left; border-top: 0; padding-top: 0; display: inline-flex; align-items: center; gap: 6px; } .weeks-cap span::before { content: ""; width: 11px; height: 11px; border: 1px solid var(--text-2); border-radius: 2px; } .weeks-cap span.p::before { background: var(--text); border-color: var(--text); } .plus-num { grid-template-columns: minmax(0, 1fr); } }
 .ln { display: block; text-wrap: balance; }
 .ln + .ln { margin-top: 0.15em; }
 .ph { display: inline-block; max-width: 100%; text-wrap: balance; }
@@ -869,9 +883,23 @@ img { -webkit-user-drag: none; user-drag: none; }
     <div class="sec sec-alt" id="rules"><div class="wrap">
       <div class="eyebrow">TUITION RULES</div>
       <h2 class="h2">교습비 운영 원칙</h2>
+      <div class="plus">
+        <div class="plus-text">
+          <div class="en">Plus week</div>
+          <h3 class="h3f">다섯째 주 수업은 교습비를 받지 않습니다</h3>
+          <p class="sub"><span class="ln">교습비는 한 달 4주 수업의 값입니다.</span><span class="ln"><span class="ph">다섯째 주가 있는 달에는 수업을 그대로 이어 가고,</span> <span class="ph">교습비는 더 받지 않습니다.</span></span><span class="ln">공휴일로 쉰 수업이 있으면 이 주에 먼저 채워 드립니다.</span></p>
+        </div>
+        <div class="plus-fig" role="img" aria-label="한 달 다섯 주 가운데 첫째 주부터 넷째 주까지는 교습비에 포함되고, 다섯째 주는 교습비 없이 진행하는 플러스 주간이다.">
+          <ol class="weeks">
+            <li><b>1주</b></li><li><b>2주</b></li><li><b>3주</b></li><li><b>4주</b></li><li class="p"><b>5주</b><i>+</i></li>
+          </ol>
+          <div class="weeks-cap"><span>교습비에 포함</span><span class="p">플러스 주간 · 교습비 없음</span></div>
+          <div class="plus-num"><b>한 해 네 주</b><span>다섯째 주는 한 해에 네 번쯤 돌아옵니다.<br>일 년이면 한 달 가까운 수업을 더 받으시는 셈입니다.</span></div>
+        </div>
+      </div>
       <details class="fold"><summary><span>수업 운영 안내</span><i aria-hidden="true"></i></summary><div class="fold-body">
       <dl class="info" style="margin-top: 28px">
-        <div><dt>정규 수업</dt><dd>한 달 4주<small><span class="ln">5주차는 보강 주간입니다.</span><span class="ln"><span class="ph">공휴일로 쉰 수업을 그 주에 채워 드리고,</span> <span class="ph">날짜는 해마다 드리는 휴원·보강 달력에 표시합니다.</span></span></small></dd></div>
+        <div><dt>정규 수업</dt><dd>한 달 4주<small><span class="ln">교습비는 한 달 4주 수업의 값입니다.</span><span class="ln"><span class="ph">다섯째 주는 플러스 주간으로,</span> <span class="ph">공휴일로 쉰 수업을 먼저 채우고 남는 날은 추가 수업으로 진행합니다.</span></span><span class="ln">날짜는 해마다 드리는 휴원·보강 달력에 표시합니다.</span></small></dd></div>
         <div><dt>입학하는 달</dt><dd>남은 횟수만큼<small><span class="ln">월 교습비 ÷ 월 횟수 × 남은 횟수로 냅니다.</span><span class="ln">예: 주 3회(월 12회)에 남은 수업이 7번이면 월 교습비의 7/12.</span></small></dd></div>
         <div><dt>납부</dt><dd>매월 1일<small><span class="ph">계좌이체,</span> <span class="ph">카드,</span> <span class="ph">결제선생으로 내실 수 있습니다.</span></small></dd></div>
         <div><dt>교습비 차감</dt><dd>질병 결석에 한해<small><span class="ln">질병으로 3일 이상 연속 결석한 경우에만 그 기간의 교습비를 차감합니다.</span><span class="ln">진료확인서나 약봉투 사진을 보내 주세요.</span><span class="ln">그 밖의 결석은 차감과 환불이 없습니다.</span></small></dd></div>
