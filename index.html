@@ -513,6 +513,10 @@ main h1, main h2, main h3, main dt, main figcaption, main .cap, main .stat dd.d,
 .ln { display: block; text-wrap: balance; }
 .ln + .ln { margin-top: 0.15em; }
 .ph { display: inline-block; max-width: 100%; text-wrap: balance; }
+body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+input, textarea, select { -webkit-user-select: text; user-select: text; }
+img { -webkit-user-drag: none; user-drag: none; }
+@media print { body > * { display: none !important; } body::before { content: "세종 클라비어 음악학원 홈페이지는 인쇄할 수 없습니다. klavier-academy.web.app"; display: block; padding: 40px; font-size: 14pt; } }
 </style>
 </head>
 <body>
@@ -1023,6 +1027,16 @@ main h1, main h2, main h3, main dt, main figcaption, main .cap, main .stat dd.d,
         });
       });
     }).catch(function () { empty("공지를 불러오지 못했습니다. 잠시 뒤 다시 열어 주세요."); });
+})();
+</script>
+<script>
+(function () {
+  function stop(e) { var t = e.target; if (t && t.closest && t.closest("input, textarea, select")) return; e.preventDefault(); }
+  ["contextmenu", "copy", "cut", "dragstart", "selectstart"].forEach(function (n) { document.addEventListener(n, stop); });
+  document.addEventListener("keydown", function (e) {
+    var k = (e.key || "").toLowerCase();
+    if ((e.ctrlKey || e.metaKey) && ["c", "x", "s", "u", "p", "a"].indexOf(k) >= 0) { if (e.target && e.target.closest && e.target.closest("input, textarea")) return; e.preventDefault(); }
+  });
 })();
 </script>
 </body>
