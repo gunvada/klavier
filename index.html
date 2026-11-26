@@ -487,6 +487,8 @@ table.grade { min-width: 0; }
 .survey .en { font-family: var(--font-display); font-style: italic; color: var(--text-2); }
 .survey .sub { max-width: 34em; }
 .survey .points { margin-top: 24px; }
+.survey .points li { grid-template-columns: minmax(0, 14.5em) minmax(0, 1fr); }
+@media (max-width: 960px) { .survey .points li { grid-template-columns: minmax(0, 1fr); } }
 .phone { margin: 0; justify-self: center; width: 100%; max-width: 300px; }
 .phone img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 4px; box-shadow: 0 18px 40px rgba(42, 40, 38, 0.14); background: var(--bg); }
 .phone .cap { text-align: center; }
@@ -828,19 +830,19 @@ img { -webkit-user-drag: none; user-drag: none; }
       </div>
       <div class="survey">
         <div>
-          <div class="en">Timetable Survey</div>
-          <h3 class="h3f">학기마다, 시간표 신청으로 자리를 정합니다</h3>
-          <p class="sub"><span class="ln">정원은 정해 두는 것보다 지키는 것이 어렵습니다.</span><span class="ln">그래서 클라비어는 시간표 신청 시스템을 직접 만들어 운영합니다.</span><span class="ln"><span class="ph">학기마다 정해진 시각에 신청이 열리면,</span> <span class="ph">보호자는 휴대폰으로 원하는 요일과 시간을 고릅니다.</span></span></p>
+          <div class="en">Timetable</div>
+          <h3 class="h3f">새 학기 시간표, 전화 대신 휴대폰으로 신청하세요</h3>
+          <p class="sub"><span class="ln"><span class="ph">학기가 바뀔 때마다 원하는 시간에 자리가 있을지,</span> <span class="ph">언제 연락해야 할지 마음 쓰이셨지요.</span></span><span class="ln">그래서 클라비어는 시간표 신청 화면을 직접 만들었습니다.</span><span class="ln"><span class="ph">신청이 열리는 날,</span> <span class="ph">댁에서 편하게 요일과 시간만 골라 주시면 됩니다.</span></span></p>
           <ul class="points">
-            <li><strong>남은 자리가 보입니다</strong><span><span class="ln">시간마다 남은 자리가 실시간으로 표시됩니다.</span><span class="ln">전화로 물어보지 않아도 됩니다.</span></span></li>
-            <li><strong>접수 순서대로 정합니다</strong><span>누르신 시각이 초 단위로 기록되고, 그 순서대로 자리를 드립니다.</span></li>
-            <li><strong>정원에서 멈춥니다</strong><span><span class="ln">선생님 한 분에 다섯 명입니다.</span><span class="ln">정원이 찬 시간은 더 받지 않고 대기로 접수합니다.</span></span></li>
+            <li><strong>남은 자리를 보고 고르세요</strong><span><span class="ln">시간마다 몇 자리가 남았는지 바로 보입니다.</span><span class="ln">학원에 따로 물어보지 않으셔도 됩니다.</span></span></li>
+            <li><strong>먼저 신청하신 순서 그대로</strong><span><span class="ln">신청하신 시각이 초 단위까지 남습니다.</span><span class="ln">누구에게나 같은 기준으로 자리를 드립니다.</span></span></li>
+            <li><strong>정원이 차면 더 받지 않습니다</strong><span><span class="ln">선생님 한 분이 다섯 명만 맡습니다.</span><span class="ln"><span class="ph">자리가 찬 시간은 대기로 받아 두었다가,</span> <span class="ph">빈자리가 나면 순서대로 연락드립니다.</span></span></span></li>
           </ul>
         </div>
         <figure class="phone"><img src="img/survey-demo.gif?v=4" width="360" height="702" loading="lazy" alt="시간표 신청 화면 시연. 아이 이름과 학년을 적고, 요일마다 남은 자리를 보면서 시간을 고른 뒤 신청하면 접수 순번이 나온다."><figcaption class="cap">시간표 신청 화면 · 예시 자료</figcaption></figure>
       </div>
       <h3 class="h3">자리가 없을 때는 신청하신 순서대로 연락드립니다</h3>
-      <p class="sub"><span class="ln"><span class="ph">다니는 아이,</span> <span class="ph">형제,</span> <span class="ph">새로 오시는 분을 가리지 않습니다.</span></span><span class="ln">원하시는 시간에 자리가 나면 대기를 신청하신 순서 그대로 안내해 드립니다.</span></p>
+      <p class="sub">원하시는 시간에 자리가 나면 대기를 신청하신 순서대로 안내해 드립니다.</p>
     </div></div>
     <div class="sec" id="fee" style="scroll-margin-top: calc(var(--nav-h) + 16px)"><div class="wrap">
       <div class="eyebrow">TUITION</div>
