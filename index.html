@@ -507,7 +507,9 @@ main h1, main h2, main h3, main dt, main figcaption, main .cap, main .stat dd.d,
 .fold > summary i::after { transform: rotate(90deg); }
 .fold[open] > summary i::after { transform: rotate(0deg); }
 .fold > summary:focus-visible { outline: 2px solid var(--text); outline-offset: 4px; }
-.fold-body { padding-bottom: 32px; }
+.fold-body { padding-bottom: 12px; }
+.fold-body > .info > div:last-child, .fold-body > .points > li:last-child, .fold-body > .queue > li:last-child, .fold-body > .tbl-wrap:last-child tbody tr:last-child > * { border-bottom: 0; }
+.fold-body > .note:last-child { margin-bottom: 20px; }
 .fold-body > :first-child { margin-top: 0 !important; }
 .fold-body .tbl-wrap { margin-top: 12px; }
 .fold-body .points { margin-top: 20px; }
