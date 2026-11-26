@@ -630,12 +630,13 @@
     page("공지사항", "홈페이지 '공지' 자리에 나오는 글입니다. 글만 쓸 수 있고 사진은 넣지 않습니다.");
     view.appendChild(h("div", { class: "row", style: "margin-bottom:14px" }, h("button", { class: "btn pri", type: "button", onclick: function () { route.back = "notices"; go("notice"); } }, "새 글 쓰기"), h("a", { class: "btn", href: "/#notice", target: "_blank", rel: "noopener" }, "홈페이지에서 보기")));
     var list = notices.slice().sort(function (a, b) { return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || (b.date || "").localeCompare(a.date || ""); });
-    if (!list.length) {
+    var missing = SEED.filter(function (n) { return !notices.some(function (x) { return x.title === n.title; }); });
+    if (missing.length) {
       var sm = h("span", { class: "msg" });
-      view.appendChild(h("div", { class: "box" }, h("p", { text: "아직 쓴 글이 없어 홈페이지 공지 자리가 비어 있습니다. 전에 홈페이지에 있던 공지 두 건(새 공간 단장 안내, 학원에 오실 때 부탁드리는 열 가지)을 그대로 넣고 시작할 수 있습니다. 넣은 뒤에는 자유롭게 고치거나 지울 수 있습니다." }),
-        h("div", { class: "row" }, h("button", { class: "btn pri", type: "button", onclick: function (e) { e.currentTarget.disabled = true; var b = db.batch(); SEED.forEach(function (n) { b.set(db.collection("notices").doc(), n); }); b.commit().then(null, function () { sm.className = "msg bad"; sm.textContent = "넣지 못했습니다."; }); } }, "전에 있던 공지 두 건 넣기"), sm)));
-      return;
+      view.appendChild(h("div", { class: "box", style: "margin-bottom:14px" }, h("p", { text: "전에 홈페이지에 있던 공지를 버튼 한 번으로 넣을 수 있습니다. 넣은 뒤에는 자유롭게 고치거나 지울 수 있습니다." }),
+        h("div", { class: "row" }, missing.map(function (n) { return h("button", { class: "btn", type: "button", onclick: function (e) { e.currentTarget.disabled = true; db.collection("notices").add(n).then(null, function () { sm.className = "msg bad"; sm.textContent = "넣지 못했습니다."; }); } }, "'" + n.title + "' 넣기"); }), sm)));
     }
+    if (!list.length) { view.appendChild(h("p", { class: "empty", text: "아직 쓴 글이 없어 홈페이지 공지 자리가 비어 있습니다." })); return; }
     var tb = h("tbody"); list.forEach(function (n) { tb.appendChild(h("tr", { tabindex: "0", onclick: function () { route.back = "notices"; go("notice", n.id); } }, h("td", { text: n.date || "" }), h("td", { text: n.tag || "공지" }), h("td", null, n.title, n.photoCount ? h("span", { class: "tag", style: "margin-left:6px", text: "사진 " + n.photoCount }) : null, n.pinned ? h("span", { class: "tag", style: "margin-left:6px", text: "맨 위 고정" }) : null), h("td", { text: n.published ? "보임" : "숨김" }))); });
     view.appendChild(h("div", { class: "scroll" }, h("table", null, h("thead", null, h("tr", null, ["날짜", "구분", "제목", "홈페이지"].map(function (x) { return h("th", { text: x }); }))), tb)));
   }
