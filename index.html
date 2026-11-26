@@ -470,6 +470,10 @@ main > section[id], main > div[id], main [id="flow"], main [id="books"], main [i
 .notices .body .pre { white-space: pre-line; }
 .notices .body img { display: block; max-width: 100%; height: auto; margin-top: 14px; border-radius: 2px; }
 .notice-empty { padding-block: 28px; color: var(--text-2); }
+.notice-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px; }
+.notice-head .sec-title { margin-bottom: 0; }
+.notice-add { flex: none; width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid var(--rule); border-radius: 50%; color: var(--text); font-size: 22px; font-weight: 300; line-height: 1; text-decoration: none; transition: border-color .15s; }
+.notice-add:hover, .notice-add:focus-visible { border-color: var(--text); }
 .legal a.staff { color: inherit; text-decoration: none; opacity: .65; }
 .legal a.staff:hover { opacity: 1; text-decoration: underline; }
 .body-p { color: var(--text-2); font-size: 15.5px; margin-top: 12px; max-width: 34em; }
@@ -567,7 +571,7 @@ img { -webkit-user-drag: none; user-drag: none; }
       <div>
         <div class="eyebrow">SEJONG · EST. 2017</div>
         <h1>오늘 친 한 곡이,<br>오래도록 <span style="white-space: nowrap">기쁨이 되기를</span></h1>
-        <p class="lede"><span class="ln"><span class="ph">잘 치는 아이보다,</span> <span class="ph">피아노를 오래 사랑하는 아이로 키웁니다.</span></span><span class="ln"><span class="ph">아이마다 다른 속도에 맞춰 가르치는</span> <span class="ph">세종 클라비어 음악학원입니다.</span></span></p>
+        <p class="lede"><span class="ln"><span class="ph">아이 한 명을 가르친다는 건,</span> <span class="ph">한 가정의 시간을 함께 맡는 일입니다.</span></span><span class="ln"><span class="ph">그래서 어느 수업도 가볍게 하지 않는</span> <span class="ph">세종 클라비어 음악학원입니다.</span></span></p>
         <div class="actions">
           <a class="btn btn-primary" href="#notice">공지사항</a>
           <a class="btn btn-ghost" href="#visit">상담 · 오시는 길</a>
@@ -710,7 +714,6 @@ img { -webkit-user-drag: none; user-drag: none; }
           </ul>
         </div>
       </div>
-      <p class="note" style="margin-top: 28px"><span class="ph">로비,</span> <span class="ph">복도,</span> <span class="ph">연습실,</span> <span class="ph">이론교육실,</span> <span class="ph">원장실까지,</span> <span class="ph">아이가 머무는 모든 공간을 같은 기준으로 살핍니다.</span></p>
       <div class="gallery" style="margin-top: 56px">
         <figure><div class="photo"><img src="img/hall.jpg" loading="lazy" alt="벽등이 켜진 복도와 학원 유리문 입구"></div><figcaption class="cap">입구 복도 · 현재</figcaption></figure>
         <figure><div class="photo"><img src="img/sign.jpg" loading="lazy" alt="세종 클라비어 음악학원 입구 간판"></div><figcaption class="cap">입구 간판 · 현재</figcaption></figure>
@@ -948,7 +951,7 @@ img { -webkit-user-drag: none; user-drag: none; }
   <section class="sec" id="notice">
     <div class="wrap">
       <div class="eyebrow">NOTICE</div>
-      <h2 class="h2 sec-title">공지사항</h2>
+      <div class="notice-head"><h2 class="h2 sec-title">공지사항</h2><a class="notice-add" href="admin/#new-notice" title="새 공지 쓰기 (관리자)" aria-label="새 공지 쓰기 (관리자)">+</a></div>
       <div class="notices"><p class="notice-empty">공지를 불러오는 중입니다.</p></div>
     </div>
   </section>
