@@ -514,6 +514,7 @@ main h1, main h2, main h3, main dt, main figcaption, main .cap, main .stat dd.d,
 @media (prefers-reduced-motion: reduce) { .fold > summary i::before, .fold > summary i::after { transition: none; } }
 .letter-body .ln + .ln { margin-top: 0; }
 @media (max-width: 400px) { .site-head .wrap { flex-wrap: nowrap; } .site-head .logo svg { height: 26px; } .nav.one a.call { padding: 7px 12px; font-size: 13px; white-space: nowrap; } }
+.unit { margin: 20px 0 -18px; text-align: right; font-size: 12.5px; color: var(--text-2); letter-spacing: 0.04em; }
 .ln { display: block; text-wrap: balance; }
 .ln + .ln { margin-top: 0.15em; }
 .ph { display: inline-block; max-width: 100%; text-wrap: balance; }
@@ -850,7 +851,8 @@ img { -webkit-user-drag: none; user-drag: none; }
     <div class="sec" id="fee" style="scroll-margin-top: calc(var(--nav-h) + 16px)"><div class="wrap">
       <div class="eyebrow">TUITION</div>
       <h2 class="h2">수업료</h2>
-      <p class="sub"><span class="ln">월 수업료는 교재 단계와 주당 횟수로 정해집니다.</span><span class="ln">단위는 원입니다.</span></p>
+      <p class="sub">월 수업료는 교재 단계와 주당 횟수로 정해집니다.</p>
+      <p class="unit">(단위: 원)</p>
       <div class="tbl-wrap"><table class="fee num">
         <thead><tr><th scope="col">단계</th><th scope="col">교재 기준</th><th scope="col">주 1회</th><th scope="col">주 2회</th><th scope="col">주 3회</th><th scope="col">주 4회</th></tr></thead>
         <tbody>
