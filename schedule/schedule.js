@@ -86,7 +86,7 @@
       TIMES.forEach(function (t) {
         var id = slotId(form.day, t), n = Number(counts[id]) || 0, c = cap(id), mineHere = mine && editing && (mine.slots || []).indexOf(id) >= 0;
         if (mineHere) n -= 1;
-        var txt = c <= 0 ? "받지 않음" : n >= c ? "정원 참 · 대기 " + (n - c + 1) + "번" : "남은 자리 " + (c - n);
+        var txt = c <= 0 ? "받지 않음" : n >= c ? "대기 " + (n - c + 1) + "번" : "";  // 학부모 화면에는 남은 자리 수를 보이지 않습니다
         list.appendChild(h("button", { type: "button", class: n >= c ? "full" : "", disabled: readonly || c <= 0, "aria-pressed": form.picks[form.day] === t ? "true" : "false",
           onclick: function () { if (form.picks[form.day] === t) delete form.picks[form.day]; else form.picks[form.day] = t; paint(); if (box.onpick) box.onpick(); } }, h("b", { text: t }), h("small", { text: txt })));
       });
