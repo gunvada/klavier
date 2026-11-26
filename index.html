@@ -491,6 +491,10 @@ table.grade { min-width: 0; }
 .phone img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 4px; box-shadow: 0 18px 40px rgba(42, 40, 38, 0.14); background: var(--bg); }
 .phone .cap { text-align: center; }
 @media (max-width: 860px) { .survey { grid-template-columns: minmax(0, 1fr); } .phone { max-width: 260px; } }
+body { word-break: keep-all; overflow-wrap: break-word; }
+main p, main li, main dd, main td, main small, main summary { text-wrap: balance; text-wrap: pretty; }
+main h1, main h2, main h3, main dt, main figcaption, main .cap, main .stat dd.d, main .note, main .sub, main .points span, main .flow li > span, main .queue span, main .visit-steps span, main .info small, main table td, .signature p { text-wrap: balance; }
+@media (max-width: 600px) { .stat { gap: 16px 20px; } .stat dt { white-space: nowrap; } .stat dd { white-space: nowrap; } .stat dd small { display: block; margin: 4px 0 0; white-space: normal; } .stat dd.d { white-space: normal; } }
 .fold { margin-top: 44px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
 .fold + .fold { margin-top: 0; border-top: 0; }
 .fold > summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-block: 22px; font-family: var(--font-serif-kr); font-weight: 700; font-size: 1.2rem; }
@@ -525,8 +529,7 @@ table.grade { min-width: 0; }
         <h1>오늘 친 한 곡이,<br>오래도록 기쁨이 되기를</h1>
         <p class="lede">잘 치는 아이보다, 오래 사랑하는 아이로 키우고 싶습니다. 2017년부터 새롬동 같은 자리에서 가르치고 있습니다.</p>
         <div class="actions">
-          <a class="btn btn-primary" href="#fee">수업료 보기</a>
-          <a class="btn btn-ghost" href="#visit">상담 · 오시는 길</a>
+          <a class="btn btn-primary" href="#visit">상담 · 오시는 길</a>
         </div>
       </div>
       <figure>
@@ -552,7 +555,7 @@ table.grade { min-width: 0; }
       <dl class="stat">
         <div><dt>개원</dt><dd>2017<small>년</small></dd><dd class="d">세종시 새롬동, 지금 이 자리</dd></div>
         <div><dt>올해</dt><dd>10<small>번째 해</small></dd><dd class="d">같은 원장이 같은 자리에서</dd></div>
-        <div><dt>아이들이 다니는 기간</dt><dd>5<small>년 넘게</small></dd><dd class="d">평균 재원 기간</dd></div>
+        <div><dt>재원 기간</dt><dd>5<small>년 넘게</small></dd><dd class="d">평균 재원 기간</dd></div>
       </dl>
     </div>
   </section>
@@ -748,7 +751,7 @@ table.grade { min-width: 0; }
       <dl class="stat">
         <div><dt>간격</dt><dd>2–3<small>개월에 한 번</small></dd><dd class="d">한 해에 네 번에서 여섯 번</dd></div>
         <div><dt>급수</dt><dd>8<small>급에서 1급까지</small></dd><dd class="d">배우는 교재에 맞춘 여덟 단계</dd></div>
-        <div><dt>심사</dt><dd>1<small>명씩</small></dd><dd class="d">원장이 아이마다 연주를 직접 듣고 평가합니다</dd></div>
+        <div><dt>심사</dt><dd>1<small>명씩</small></dd><dd class="d">원장이 직접 듣고 평가합니다</dd></div>
       </dl>
 
       <div class="duo origin" style="margin-top: 48px">
