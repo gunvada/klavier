@@ -14,8 +14,9 @@
   var FEES = { "초급": [110000, 120000, 130000, 140000, 150000], "중급": [120000, 130000, 140000, 150000, 160000], "고급": [130000, 140000, 150000, 160000, 170000] };
   var DOMAIN = "@klavier.admin";
 
-  var db, auth, students = [], slots = {}, unsubs = [], route = { name: "home" }, filters = {};
+  var db, auth, students = [], slots = {}, unsubs = [], route = location.hash === "#new-notice" ? { name: "notice" } : { name: "home" }, filters = {};
   var survey = null, subs = [], desk = {}, subsRound = null, subsUnsub = [], notices = [], awards = [], ledger = [], lgMonth = "", lgCarry = false, svTab = "order";
+  if (location.hash === "#new-notice") try { history.replaceState(null, "", location.pathname); } catch (e) {}
   var view = document.getElementById("view");
 
   /* ── 작은 도구 ── */

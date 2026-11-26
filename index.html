@@ -470,6 +470,10 @@ main > section[id], main > div[id], main [id="flow"], main [id="books"], main [i
 .notices .body .pre { white-space: pre-line; }
 .notices .body img { display: block; max-width: 100%; height: auto; margin-top: 14px; border-radius: 2px; }
 .notice-empty { padding-block: 28px; color: var(--text-2); }
+.notice-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px; }
+.notice-head .sec-title { margin-bottom: 0; }
+.notice-add { flex: none; width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid var(--rule); border-radius: 50%; color: var(--text); font-size: 22px; font-weight: 300; line-height: 1; text-decoration: none; transition: border-color .15s; }
+.notice-add:hover, .notice-add:focus-visible { border-color: var(--text); }
 .legal a.staff { color: inherit; text-decoration: none; opacity: .65; }
 .legal a.staff:hover { opacity: 1; text-decoration: underline; }
 .body-p { color: var(--text-2); font-size: 15.5px; margin-top: 12px; max-width: 34em; }
@@ -945,7 +949,7 @@ img { -webkit-user-drag: none; user-drag: none; }
   <section class="sec" id="notice">
     <div class="wrap">
       <div class="eyebrow">NOTICE</div>
-      <h2 class="h2 sec-title">공지사항</h2>
+      <div class="notice-head"><h2 class="h2 sec-title">공지사항</h2><a class="notice-add" href="admin/#new-notice" title="새 공지 쓰기 (관리자)" aria-label="새 공지 쓰기 (관리자)">+</a></div>
       <div class="notices"><p class="notice-empty">공지를 불러오는 중입니다.</p></div>
     </div>
   </section>
