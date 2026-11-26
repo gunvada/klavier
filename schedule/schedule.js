@@ -1,4 +1,4 @@
-/* 클라비어 시간표 조사 — 학부모 화면
+/* 클라비어 시간표 신청 — 학부모 화면
    읽는 것: survey/current (회차 안내 · 열림/마감 시각), rounds/{회차}/meta/counts (칸별 신청 수, 이름 없음)
    쓰는 것: rounds/{회차}/submissions/{열쇠} (내 신청 한 건). 다른 아이의 이름·명단은 어디에도 나오지 않습니다.
    열림 · 마감 · 접수 순서는 서버 시각으로 판정합니다(firestore.rules). */
@@ -7,7 +7,7 @@
   var DAYS = [["mon", "월"], ["tue", "화"], ["wed", "수"], ["thu", "목"], ["fri", "금"]];
   var TIMES = []; for (var hh = 13; hh <= 19; hh++) { TIMES.push(hh + ":00"); if (hh < 19) TIMES.push(hh + ":30"); }
   var GRADES = ["6세", "7세", "초1", "초2", "초3", "초4", "초5", "초6", "중1", "중2", "중3", "고1", "고2", "고3", "성인"];
-  var KINDS = ["재원생", "형제 신규", "신규"];
+  var KIND = "재원생"; /* 구분 없이 모두 같은 순서로 받습니다. 저장 규칙이 이 칸을 요구해 고정값만 넣고 화면에는 쓰지 않습니다. */
   var view = document.getElementById("view"), db, S = null, counts = {}, mine = null, editing = false, lookup = false, offset = 0, phase = "", unsubCounts = null, repaint = null;
   var form = blank();
 
@@ -53,12 +53,12 @@
   /* ── 화면 ── */
   function head(stateText) {
     view.innerHTML = ""; repaint = null;
-    view.appendChild(h("h1", { text: (S && S.title) || "시간표 조사" }));
+    view.appendChild(h("h1", { text: ((S && S.title) || "시간표 신청").replace("시간표 조사", "시간표 신청") }));
     view.appendChild(h("p", { class: "state", text: stateText }));
     if (S && S.notice) view.appendChild(h("p", { class: "notice", text: S.notice }));
   }
   function render() {
-    if (phase === "none") { view.innerHTML = ""; view.appendChild(h("h1", { text: "시간표 조사" })); view.appendChild(h("div", { class: "card" }, h("p", { text: "지금은 진행 중인 시간표 조사가 없습니다." }), h("p", { class: "small", text: "조사가 시작되면 학원에서 따로 알려 드립니다." }))); return; }
+    if (phase === "none") { view.innerHTML = ""; view.appendChild(h("h1", { text: "시간표 신청" })); view.appendChild(h("div", { class: "card" }, h("p", { text: "지금은 시간표 신청 기간이 아닙니다." }), h("p", { class: "small", text: "신청이 시작되면 학원에서 따로 알려 드립니다." }))); return; }
     if (phase === "before") {
       head("아직 열리지 않았습니다");
       view.appendChild(h("div", { class: "card" }, h("p", { class: "cap", text: kst(ms(S.openAt)) + "에 열립니다. 이 화면을 그대로 두시면 시간이 되었을 때 저절로 열립니다." }), h("p", { class: "count", id: "countdown", text: left(ms(S.openAt) - now()) })));
@@ -112,7 +112,6 @@
     f.appendChild(h("h2", { text: editing ? "신청 내용 고치기" : "신청하기" }));
     if (editing) f.appendChild(h("p", { class: "msg bad", text: "요일이나 시간을 바꾸면 접수 순서가 지금 고치는 시각으로 다시 매겨집니다. 요청 사항만 고치면 순서는 그대로입니다." }));
     f.appendChild(field("아이 이름 (성까지)", name));
-    f.appendChild(seg("신청 구분", KINDS, function () { return form.kind; }, function (v) { form.kind = v; }));
     f.appendChild(field("학년", grade));
     f.appendChild(seg("희망 횟수", [1, 2, 3, 4, 5], function () { return form.weekly; }, function (v) { form.weekly = v; }, function (o) { return "주 " + o + "회"; }));
     var pick = h("div"); pick.onpick = note;
@@ -132,14 +131,13 @@
       var nm = form.name.trim(), ph = form.phone.replace(/\D/g, ""), slots = Object.keys(form.picks).map(function (d) { return slotId(d, form.picks[d]); }).sort(function (a, b) { return order(a) - order(b); });
       function bad(t) { m.className = "msg bad"; m.textContent = t; }
       if (nm.length < 2) return bad("아이 이름을 성까지 적어 주세요.");
-      if (!form.kind) return bad("신청 구분을 골라 주세요.");
       if (!form.grade) return bad("학년을 골라 주세요.");
       if (!form.weekly) return bad("희망 횟수를 골라 주세요.");
       if (slots.length !== form.weekly) return bad("고른 요일 수(" + slots.length + ")와 희망 횟수(주 " + form.weekly + "회)가 같아야 합니다.");
       if (ph.length < 9) return bad("보호자 연락처를 적어 주세요.");
       if (!form.agree) return bad("개인정보 수집 · 이용에 동의해 주세요.");
       btn.disabled = true; m.className = "msg"; m.textContent = "접수하는 중입니다. 화면을 닫지 말아 주세요.";
-      var base = { name: nm, kind: form.kind, grade: form.grade, weekly: form.weekly, slots: slots, phone: form.phone.trim(), memo: form.memo.trim(), agree: true };
+      var base = { name: nm, kind: KIND, grade: form.grade, weekly: form.weekly, slots: slots, phone: form.phone.trim(), memo: form.memo.trim(), agree: true };
       key(nm, ph).then(function (k) {
         var ref = sub(k), cref = db.doc("rounds/" + S.round + "/meta/counts");
         return (editing ? Promise.resolve(null) : ref.get()).then(function (pre) {
@@ -170,7 +168,7 @@
       list.appendChild(h("li", null, h("b", { text: slotName(id) }), h("span", { class: wait ? "w" : "k", text: p ? (wait ? "대기 " + (p - c) + "번" : "가배정 · " + p + "번째") : "접수" })));
     });
     view.appendChild(h("div", { class: "card" }, h("h2", { style: "margin-top:0", text: "접수되었습니다" }),
-      h("dl", null, h("dt", { text: "아이" }), h("dd", { text: mine.name + " · " + mine.grade + " · " + mine.kind }), h("dt", { text: "횟수" }), h("dd", { text: "주 " + mine.weekly + "회" }), h("dt", { text: "접수 시각" }), h("dd", { text: t ? kst(t, true) : "" }),
+      h("dl", null, h("dt", { text: "아이" }), h("dd", { text: mine.name + " · " + mine.grade }), h("dt", { text: "횟수" }), h("dd", { text: "주 " + mine.weekly + "회" }), h("dt", { text: "접수 시각" }), h("dd", { text: t ? kst(t, true) : "" }),
         mine.memo ? h("dt", { text: "요청" }) : null, mine.memo ? h("dd", { text: mine.memo }) : null), list,
       h("p", { class: "small", style: "margin:12px 0 0", text: "순번은 접수하신 때를 기준으로 한 것입니다. 지금 누르신 것으로 확정되지는 않으며, 원장이 접수 순서대로 확인한 뒤 확정 결과를 따로 안내해 드립니다." })));
     if (canEdit) {

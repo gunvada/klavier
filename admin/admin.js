@@ -113,7 +113,7 @@
     view.appendChild(h("div", { class: "tiles" },
       tile("통계 · 월말 점검", "등록·퇴원 추이, 경로, 주의 원생", "stats"),
       tile("퇴원 · 휴원생", "그만둔 아이, 쉬는 아이 기록", "gone"),
-      tile("시간표 조사", surveyState().text + (survey && survey.round ? " · 접수 " + subs.length + "건" : ""), "survey"),
+      tile("시간표 신청", surveyState().text + (survey && survey.round ? " · 접수 " + subs.length + "건" : ""), "survey"),
       tile("이달의 클라비어", "매달 상 받은 아이 기록 · " + awards.length + "건", "awards"),
       tile("현금출납부", "수강료 수입·지출 기록, 인쇄 · " + ledger.length + "줄", "ledger"),
       tile("공지사항", "홈페이지 공지 " + notices.length + "건 · 글쓰기, 고치기", "notices")));
@@ -467,14 +467,14 @@
     }
   }
 
-  /* ── 시간표 조사 ── */
-  var NOTICE0 = "한 시간 정원은 10명입니다.\n접수 순서대로 가배정하고, 정원이 찬 시간은 대기로 접수됩니다.\n아이 이름은 성까지 적어 주세요.\n오실 수 있는 요일만 골라 주세요.\n문의: 문자 010-4488-4763";
+  /* ── 시간표 신청 ── */
+  var NOTICE0 = "선생님 한 분이 한 시간에 다섯 명만 전담합니다.\n접수 순서대로 가배정하고, 정원이 찬 시간은 대기로 접수됩니다.\n아이 이름은 성까지 적어 주세요.\n오실 수 있는 요일만 골라 주세요.\n문의: 문자 010-4488-4763";
   function tsMs(t) { return t && t.toMillis ? t.toMillis() : 0; }
   function kstInput(msv) { return msv ? new Date(msv + 9 * 36e5).toISOString().slice(0, 16) : ""; }
   function kstText(msv, sec) { return msv ? new Date(msv + 9 * 36e5).toISOString().slice(5, sec ? 19 : 16).replace("T", " ") : ""; }
   function fromKst(v) { return v ? firebase.firestore.Timestamp.fromDate(new Date(v + ":00+09:00")) : null; }
   function surveyState() {
-    if (!survey || !survey.round) return { key: "none", text: "만든 조사 없음" };
+    if (!survey || !survey.round) return { key: "none", text: "연 신청 없음" };
     var t = Date.now(), st = t < tsMs(survey.openAt) ? ["before", "열리기 전"] : t < tsMs(survey.closeAt) ? ["open", "접수 중"] : ["closed", "마감"];
     return { key: st[0], text: st[1] + (survey.visible ? "" : " (학부모 화면 숨김)") };
   }
@@ -494,7 +494,7 @@
       (s.slots || []).forEach(function (id) { n[id] = (n[id] || 0) + 1; s.rank[id] = n[id]; if (n[id] > svCap(id)) s.waits++; (bySlot[id] = bySlot[id] || []).push(s); });
       var m = active().filter(function (x) { return x.name === s.name.replace(/\s/g, ""); }), linkId = (desk[s.id] || {}).studentId, linked = linkId ? students.filter(function (x) { return x.id === linkId; })[0] : null;
       s.linked = linked || null; s.match = linked || (m.length === 1 ? m[0] : null);
-      s.check = linked ? "" : s.kind === "재원생" ? (m.length === 0 ? "명부에 없는 이름" : m.length > 1 ? "같은 이름 " + m.length + "명" : "") : (m.length ? "명부에 같은 이름 있음" : "");
+      s.check = linked ? "" : m.length === 0 ? "명부에 없는 이름" : m.length > 1 ? "같은 이름 " + m.length + "명" : ""; s.who = s.match ? "재원생" : "명부에 없음";
     });
     return { list: list, n: n, bySlot: bySlot };
   }
@@ -508,16 +508,16 @@
   }
   function surveyView() {
     var st = surveyState(), R = ranked(), sv = survey || {};
-    page("시간표 조사", "지금 상태: " + st.text + (sv.round ? " · 접수 " + subs.length + "건" : ""));
+    page("시간표 신청", "지금 상태: " + st.text + (sv.round ? " · 접수 " + subs.length + "건" : ""));
     var link = location.origin + "/schedule/";
-    var F = { title: h("input", { type: "text", value: sv.title || "시간표 조사" }), notice: h("textarea", { rows: "6" }, sv.notice == null ? NOTICE0 : sv.notice),
+    var F = { title: h("input", { type: "text", value: sv.title || "시간표 신청" }), notice: h("textarea", { rows: "6" }, sv.notice == null ? NOTICE0 : sv.notice),
       openAt: h("input", { type: "datetime-local", value: kstInput(tsMs(sv.openAt)) }), closeAt: h("input", { type: "datetime-local", value: kstInput(tsMs(sv.closeAt)) }),
       cap: h("input", { type: "number", min: "1", max: "30", value: sv.cap || 10 }), visible: h("input", { type: "checkbox", checked: !!sv.visible }) };
     var m = h("span", { class: "msg" });
     function fail() { m.className = "msg bad"; m.textContent = "저장하지 못했습니다."; }
     function data() {
       var caps = {}; Object.keys(slots).forEach(function (id) { var c = slots[id].capacity; if (c != null && Number(c) !== 10) caps[id] = Number(c); });
-      return { title: F.title.value.trim() || "시간표 조사", notice: F.notice.value.trim(), openAt: fromKst(F.openAt.value), closeAt: fromKst(F.closeAt.value), cap: Number(F.cap.value) || 10, caps: caps, visible: F.visible.checked };
+      return { title: F.title.value.trim() || "시간표 신청", notice: F.notice.value.trim(), openAt: fromKst(F.openAt.value), closeAt: fromKst(F.closeAt.value), cap: Number(F.cap.value) || 10, caps: caps, visible: F.visible.checked };
     }
     function save(newRound) {
       var d = data(); if (!d.openAt || !d.closeAt || tsMs(d.closeAt) <= tsMs(d.openAt)) { m.className = "msg bad"; m.textContent = "열리는 시각과 마감 시각을 넣어 주세요. 마감은 열림보다 뒤여야 합니다."; return; }
@@ -527,11 +527,11 @@
       p.then(function () { return db.doc("survey/current").set(d); }).then(function () { m.className = "msg good"; m.textContent = newRound ? "새로고침했습니다. 받은 신청을 비우고 0부터 다시 받습니다." : "저장했습니다."; delete fresh.dataset.sure; fresh.textContent = "새로고침"; }, fail);
     }
     var fresh = h("button", { class: "btn danger", type: "button", onclick: function () { if (fresh.dataset.sure) save(true); else { fresh.dataset.sure = "1"; fresh.textContent = "한 번 더 누르면 받은 신청을 비우고 처음부터 다시 받습니다"; } } }, "새로고침");
-    view.appendChild(h("h2", { text: "조사 설정" }));
-    view.appendChild(h("div", { class: "form" }, h("label", { class: "wide" }, "조사 이름", F.title), h("label", { class: "wide" }, "학부모에게 보이는 안내문", F.notice),
+    view.appendChild(h("h2", { text: "신청 설정" }));
+    view.appendChild(h("div", { class: "form" }, h("label", { class: "wide" }, "신청 이름", F.title), h("label", { class: "wide" }, "학부모에게 보이는 안내문", F.notice),
       h("label", null, "열리는 시각", F.openAt), h("label", null, "마감 시각", F.closeAt), h("label", null, "한 시간 정원 (기본)", F.cap),
-      h("label", null, "학부모 화면", h("div", { class: "checks" }, h("label", null, F.visible, "링크를 열면 이 조사가 보이게 하기"))),
-      h("div", { class: "wide row" }, h("button", { class: "btn pri", type: "button", onclick: function () { save(!sv.round); } }, sv.round ? "설정 저장" : "조사 만들기"), sv.round ? fresh : null,
+      h("label", null, "학부모 화면", h("div", { class: "checks" }, h("label", null, F.visible, "링크를 열면 신청 화면이 보이게 하기"))),
+      h("div", { class: "wide row" }, h("button", { class: "btn pri", type: "button", onclick: function () { save(!sv.round); } }, sv.round ? "설정 저장" : "신청 열기"), sv.round ? fresh : null,
         sv.round && st.key === "open" ? h("button", { class: "btn", type: "button", onclick: function () { db.doc("survey/current").update({ closeAt: firebase.firestore.Timestamp.now() }).then(function () { m.className = "msg good"; m.textContent = "마감했습니다."; }, fail); } }, "지금 마감") : null, m),
       h("p", { class: "wide msg", text: "시간표 현황에서 정원을 10명이 아니게 바꿔 둔 칸은 그 정원이 그대로 쓰입니다. 학부모에게는 아래 주소 하나만 보내면 됩니다." }),
       h("div", { class: "wide row" }, h("code", { text: link }), h("button", { class: "btn", type: "button", onclick: function (e) { var b = e.currentTarget; (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject()).then(function () { b.textContent = "복사했습니다"; }, function () { b.textContent = "주소를 길게 눌러 복사해 주세요"; }); } }, "주소 복사"),
@@ -540,7 +540,7 @@
 
     var waitN = R.list.filter(function (s) { return s.waits; }).length, notYet = active().filter(function (x) { return !R.list.some(function (s) { return s.match && s.match.id === x.id; }); }).sort(byName);
     view.appendChild(h("h2", { text: "접수 현황" }));
-    view.appendChild(h("div", { class: "box kv" }, [[subs.length + "건", "접수"], [R.list.filter(function (s) { return s.kind === "재원생"; }).length + "건", "재원생"], [R.list.filter(function (s) { return s.kind !== "재원생"; }).length + "건", "형제 · 신규"], [waitN + "건", "대기가 낀 신청"], [notYet.length + "명", "아직 신청 안 한 재원생"]].map(function (x) { return h("div", null, h("b", { text: x[0] }), h("span", { text: x[1] })); })));
+    view.appendChild(h("div", { class: "box kv" }, [[subs.length + "건", "접수"], [R.list.filter(function (s) { return s.match; }).length + "건", "명부에 있는 아이"], [R.list.filter(function (s) { return !s.match; }).length + "건", "명부에 없는 이름"], [waitN + "건", "대기가 낀 신청"], [notYet.length + "명", "아직 신청 안 한 재원생"]].map(function (x) { return h("div", null, h("b", { text: x[0] }), h("span", { text: x[1] })); })));
     var TABS = [["order", "접수 순서"], ["grid", "칸별 현황"], ["none", "미신청 재원생"]];
     view.appendChild(h("div", { class: "tabs", style: "margin-top:16px" }, TABS.map(function (v) { return h("button", { type: "button", class: svTab === v[0] ? "on" : "", text: v[1], onclick: function () { svTab = v[0]; surveyView(); } }); })));
     var m2 = h("span", { class: "msg" });
@@ -554,11 +554,11 @@
       };
       R.list.forEach(function (s) {
         var d = desk[s.id] || {}, sel = h("select", { "aria-label": "처리", onchange: function (e) { db.doc("rounds/" + sv.round + "/desk/" + s.id).set({ status: e.target.value }, { merge: true }); } }, ["접수", "배정 완료", "대기 명단", "보류"].map(function (o) { return h("option", { value: o, selected: (d.status || "접수") === o, text: o }); }));
-        tb.appendChild(h("tr", null, h("td", { class: "num", text: s.no }), h("td", { text: kstText(tsMs(s.at), true) }), h("td", null, s.name, s.check ? h("span", { class: "tag w", style: "margin-left:6px", text: s.check }) : null, s.linked ? h("span", { class: "tag", style: "margin-left:6px", text: "명부: " + s.linked.name }) : null, s.check || s.linked ? linker(s) : null), h("td", { text: s.kind }), h("td", { text: s.grade }), h("td", { class: "num", text: s.weekly }),
+        tb.appendChild(h("tr", null, h("td", { class: "num", text: s.no }), h("td", { text: kstText(tsMs(s.at), true) }), h("td", null, s.name, s.check ? h("span", { class: "tag w", style: "margin-left:6px", text: s.check }) : null, s.linked ? h("span", { class: "tag", style: "margin-left:6px", text: "명부: " + s.linked.name }) : null, s.check || s.linked ? linker(s) : null), h("td", { text: s.who }), h("td", { text: s.grade }), h("td", { class: "num", text: s.weekly }),
           h("td", null, (s.slots || []).map(function (id) { var w = s.rank[id] - svCap(id); return h("span", { class: "tag" + (w > 0 ? " w" : ""), style: "margin:0 4px 2px 0", text: slotName(id) + (w > 0 ? " 대기" + w : "") }); })),
           h("td", { text: s.phone || "" }), h("td", { text: s.memo || "" }), h("td", null, sel)));
       });
-      view.appendChild(R.list.length ? h("div", { class: "scroll" }, h("table", { class: "plain" }, h("thead", null, h("tr", null, ["순번", "접수 시각", "이름", "구분", "학년", "주", "신청 시간", "연락처", "요청", "처리"].map(function (x) { return h("th", { text: x }); }))), tb)) : h("p", { class: "empty", text: "아직 들어온 신청이 없습니다." }));
+      view.appendChild(R.list.length ? h("div", { class: "scroll" }, h("table", { class: "plain" }, h("thead", null, h("tr", null, ["순번", "접수 시각", "이름", "명부", "학년", "주", "신청 시간", "연락처", "요청", "처리"].map(function (x) { return h("th", { text: x }); }))), tb)) : h("p", { class: "empty", text: "아직 들어온 신청이 없습니다." }));
     } else if (svTab === "grid") {
       var g = h("div", { class: "tt" }, h("div")); DAYS.forEach(function (d) { g.appendChild(h("div", { class: "h", text: d[1] })); });
       TIMES.forEach(function (t) { g.appendChild(h("div", { class: "t", text: t })); DAYS.forEach(function (d) {
@@ -580,10 +580,10 @@
       h("button", { class: "btn", type: "button", onclick: function () { db.doc("rounds/" + sv.round + "/meta/counts").set({ c: R.n }).then(function () { m2.className = "msg good"; m2.textContent = "학부모 화면의 남은 자리를 실제 접수 건수로 다시 맞췄습니다."; }); } }, "남은 자리 다시 계산"), m2));
     view.appendChild(out);
     function csv() {
-      var rows = [["순번", "접수 시각", "이름", "구분", "학년", "주 횟수", "신청 시간", "대기", "연락처", "요청", "처리"]].concat(R.list.map(function (s) {
-        return [s.no, kstText(tsMs(s.at), true), s.name, s.kind, s.grade, s.weekly, s.slots.map(slotName).join(" / "), s.slots.filter(function (id) { return s.rank[id] > svCap(id); }).map(function (id) { return slotName(id) + " 대기" + (s.rank[id] - svCap(id)); }).join(" / "), s.phone, s.memo, (desk[s.id] || {}).status || "접수"]; }));
+      var rows = [["순번", "접수 시각", "이름", "명부", "학년", "주 횟수", "신청 시간", "대기", "연락처", "요청", "처리"]].concat(R.list.map(function (s) {
+        return [s.no, kstText(tsMs(s.at), true), s.name, s.who, s.grade, s.weekly, s.slots.map(slotName).join(" / "), s.slots.filter(function (id) { return s.rank[id] > svCap(id); }).map(function (id) { return slotName(id) + " 대기" + (s.rank[id] - svCap(id)); }).join(" / "), s.phone, s.memo, (desk[s.id] || {}).status || "접수"]; }));
       var text = "﻿" + rows.map(function (r) { return r.map(function (v) { return '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"'; }).join(","); }).join("\r\n");
-      var a = h("a", { href: URL.createObjectURL(new Blob([text], { type: "text/csv" })), download: "시간표조사_" + sv.round + ".csv" }); document.body.appendChild(a); a.click(); a.remove();
+      var a = h("a", { href: URL.createObjectURL(new Blob([text], { type: "text/csv" })), download: "시간표신청_" + sv.round + ".csv" }); document.body.appendChild(a); a.click(); a.remove();
     }
     function preview() {
       var done = R.list.filter(function (s) { return (desk[s.id] || {}).status === "배정 완료"; }), hit = done.filter(function (s) { return s.match; }), miss = done.filter(function (s) { return !s.match; });
@@ -593,7 +593,7 @@
       out.appendChild(h("p", { class: "msg", text: "'배정 완료' " + done.length + "건 중 명부의 재원생과 이름이 맞는 " + hit.length + "명의 수업 시간과 주 횟수를 아래처럼 바꿉니다. 비어 있는 보호자 연락처도 함께 채웁니다." }));
       if (hit.length) out.appendChild(h("div", { class: "scroll" }, h("table", { class: "plain" }, h("thead", null, h("tr", null, ["이름", "지금", "바뀐 뒤"].map(function (x) { return h("th", { text: x }); }))), h("tbody", null, hit.map(function (s) {
         return h("tr", null, h("td", { text: s.match.name === s.name ? s.name : s.match.name + " (신청서에는 '" + s.name + "')" }), h("td", { text: sortSlots(s.match.slots).map(slotName).join(" · ") || "없음" }), h("td", { text: sortSlots(s.slots).map(slotName).join(" · ") })); })))));
-      if (miss.length) out.appendChild(h("p", { class: "msg bad", text: "명부의 아이와 이어지지 않아 반영하지 않는 신청: " + miss.map(function (s) { return s.name + "(" + s.kind + ")"; }).join(", ") + " — 재원생이면 접수 순서 표에서 명부의 아이와 이어 주시고, 신규는 '신규 등록'에서 직접 넣어 주세요." }));
+      if (miss.length) out.appendChild(h("p", { class: "msg bad", text: "명부의 아이와 이어지지 않아 반영하지 않는 신청: " + miss.map(function (s) { return s.name; }).join(", ") + " — 재원생인데 이름이 다르게 적힌 경우는 접수 순서 표에서 명부의 아이와 이어 주시고, 새로 오는 아이는 '신규 등록'에서 직접 넣어 주세요." }));
       var m3 = h("span", { class: "msg" });
       if (hit.length) out.appendChild(h("div", { class: "row", style: "margin-top:12px" }, h("button", { class: "btn pri", type: "button", onclick: function (e) {
         var b = db.batch(), btn = e.currentTarget; btn.disabled = true;
