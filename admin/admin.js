@@ -38,6 +38,7 @@
     return el;
   }
   function won(n) { return n == null ? "확인 필요" : Number(n).toLocaleString("ko-KR"); }
+  function md(d) { return d ? Number(d.slice(5, 7)) + "/" + Number(d.slice(8, 10)) : ""; }
   function today() { var d = new Date(); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
   function slotId(d, t) { return d + "-" + t.replace(":", ""); }
   function slotName(id) { var p = id.split("-"), d = DAYS.filter(function (x) { return x[0] === p[0]; })[0]; return (d ? d[1] : p[0]) + " " + p[1].slice(0, 2) + ":" + p[1].slice(2); }
@@ -105,6 +106,16 @@
   function home() {
     page("세종 클라비어 음악학원", "재원 " + active().length + "명");
     function tile(name, desc, to, off) { return h("button", { class: "tile", type: "button", disabled: !!off, onclick: function () { go(to); } }, h("b", { text: name }), h("span", { text: desc })); }
+    var plan = active().filter(function (s) { return s.leavePlannedOn; }).sort(function (a, b) { return a.leavePlannedOn.localeCompare(b.leavePlannedOn); });
+    if (plan.length) {
+      var due = plan.filter(function (s) { return s.leavePlannedOn <= today(); });
+      view.appendChild(h("div", { class: "box", style: "margin-bottom:16px" },
+        h("b", { text: "퇴원 예정 " + plan.length + "명" + (due.length ? " · 예정일이 된 아이 " + due.length + "명" : "") }),
+        h("div", { class: "row", style: "margin-top:8px" }, plan.map(function (s) {
+          return h("button", { class: "btn", type: "button", onclick: function () { route.back = "home"; go("student", s.id); } }, s.name + " · " + md(s.leavePlannedOn) + (s.leavePlannedOn <= today() ? " · 퇴원 처리 필요" : ""));
+        })),
+        h("p", { class: "msg", style: "margin-top:8px", text: due.length ? "예정일이 된 아이는 이름을 눌러 '퇴원 처리'를 눌러 주세요. 그때까지는 시간표에 남아 있습니다." : "예정일까지는 재원생으로 시간표에 남습니다." })));
+    }
     view.appendChild(h("div", { class: "cap", text: "매일" }));
     view.appendChild(h("div", { class: "tiles" },
       tile("시간표 현황", "요일·시간마다 아이 이름과 인원", "timetable"),
@@ -211,7 +222,7 @@
   var query = { roster: "", gone: "" };
   function hay(s) {
     return [s.name, s.school, grade(s), s.book, stage(s), s.guardian, s.guardianPhone, (s.guardianPhone || "").replace(/\D/g, ""), s.payer, s.source, s.memo, s.enrolledOn, s.leftOn,
-      (s.watchReasons || []).join(" "), (s.leaveReasons || []).join(" "), sortSlots(s.slots || []).map(slotName).join(" "), s.watch ? "주의" : ""].join(" ").toLowerCase();
+      (s.watchReasons || []).join(" "), (s.leaveReasons || []).join(" "), sortSlots(s.slots || []).map(slotName).join(" "), s.watch ? "주의" : "", s.leavePlannedOn ? "퇴원 예정 " + s.leavePlannedOn : ""].join(" ").toLowerCase();
   }
   function match(s, q) { var t = hay(s); return q.toLowerCase().split(/\s+/).filter(Boolean).every(function (w) { return t.indexOf(w) >= 0; }); }
   function searchBox(key, hint, draw) {
@@ -237,9 +248,9 @@
       }).sort(function (a, b) { return gradeOrder(a) - gradeOrder(b) || byName(a, b); });
       out.innerHTML = "";
       out.appendChild(h("p", { class: "msg", text: (q ? "'" + q + "' 검색 결과 " : "") + list.length + "명" }));
-      out.appendChild(list.length ? table(list, ["이름", "학교", "학년", "주 횟수", "교재", "단계", "월 수강료", "시간", "주의"], function (s) {
+      out.appendChild(list.length ? table(list, ["이름", "학교", "학년", "주 횟수", "교재", "단계", "월 수강료", "시간", "표시"], function (s) {
         var f = fee(s);
-        return [s.name, s.school || "", grade(s), s.weeklyCount || "", s.book || "", stage(s), f == null ? "확인 필요" : f, sortSlots(s.slots).map(slotName).join(" · "), s.watch ? h("span", { class: "tag w", text: "주의" }) : ""];
+        return [s.name, s.school || "", grade(s), s.weeklyCount || "", s.book || "", stage(s), f == null ? "확인 필요" : f, sortSlots(s.slots).map(slotName).join(" · "), (s.watch || s.leavePlannedOn) ? h("span", null, s.watch ? h("span", { class: "tag w", text: "주의" }) : null, s.watch && s.leavePlannedOn ? " " : null, s.leavePlannedOn ? h("span", { class: "tag w", text: "퇴원 예정 " + md(s.leavePlannedOn) }) : null) : ""];
       }) : h("p", { class: "empty", text: students.length ? "조건에 맞는 아이가 없습니다." : "아직 원생이 없습니다. 홈의 '노션에서 가져오기'나 '신규 등록'으로 시작합니다." }));
     }
     view.appendChild(searchBox("roster", "이름, 학교, 교재, 요일·시간, 메모로 검색", draw));
@@ -338,16 +349,26 @@
     function setStatus(patch, text) { db.collection("students").doc(s.id).update(patch).then(function () { go("roster"); }, function () { sm.className = "msg bad"; sm.textContent = text + " 처리를 하지 못했습니다."; }); }
     var box = h("div", { class: "box" });
     if (s.status === "재원") {
-      var leftIn = h("input", { type: "date", value: today(), max: today() });
-      box.appendChild(h("label", null, "퇴원일", leftIn));
+      var leftIn = h("input", { type: "date", value: s.leavePlannedOn || today() });
+      var goBtn, planNote = h("p", { class: "msg" });
+      function planView() {
+        var fut = leftIn.value > today();
+        if (goBtn) { goBtn.textContent = fut ? "퇴원 예정으로 저장" : "퇴원 처리"; delete goBtn.dataset.sure; }
+        planNote.textContent = fut ? "오늘 이후 날짜입니다. 퇴원 예정으로 적어 두며, 그날까지는 재원생으로 시간표에 남습니다." : s.leavePlannedOn ? "퇴원 예정일(" + s.leavePlannedOn + ")이 되었습니다. '퇴원 처리'를 누르면 퇴원생으로 옮깁니다." : "";
+      }
+      leftIn.addEventListener("change", planView);
+      box.appendChild(h("label", null, "퇴원일 (미리 통보받았으면 예정일을 적습니다)", leftIn)); box.appendChild(planNote);
       box.appendChild(h("label", { style: "margin-top:12px" }, "퇴원 사유 (여러 개 가능)")); box.appendChild(reasons);
       box.appendChild(h("div", { class: "row", style: "margin-top:12px" },
         h("button", { class: "btn danger", type: "button", onclick: function (e) {
-          if (!e.currentTarget.dataset.sure) { e.currentTarget.dataset.sure = "1"; e.currentTarget.textContent = "한 번 더 누르면 퇴원 처리됩니다"; return; }
           if (!leftIn.value) { sm.className = "msg bad"; sm.textContent = "퇴원일을 적어 주세요."; return; }
-          setStatus({ status: "퇴원", leftOn: leftIn.value, leaveReasons: read(reasons), slots: [] }, "퇴원");
+          if (leftIn.value > today()) { setStatus({ leavePlannedOn: leftIn.value, leaveReasons: read(reasons) }, "퇴원 예정"); return; }
+          if (!e.currentTarget.dataset.sure) { e.currentTarget.dataset.sure = "1"; e.currentTarget.textContent = "한 번 더 누르면 퇴원 처리됩니다"; return; }
+          setStatus({ status: "퇴원", leftOn: leftIn.value, leavePlannedOn: null, leaveReasons: read(reasons), slots: [] }, "퇴원");
         } }, "퇴원 처리"),
+        s.leavePlannedOn ? h("button", { class: "btn", type: "button", onclick: function () { setStatus({ leavePlannedOn: null, leaveReasons: [] }, "퇴원 예정 취소"); } }, "퇴원 예정 취소") : null,
         h("button", { class: "btn", type: "button", onclick: function () { setStatus({ status: "휴원", slots: [] }, "휴원"); } }, "휴원 처리"), sm));
+      goBtn = box.querySelector(".btn.danger"); planView();
       box.appendChild(h("p", { class: "msg", text: "퇴원 · 휴원 처리하면 시간표에서 자동으로 빠집니다. 기록은 지워지지 않습니다." }));
     } else {
       if (s.status === "퇴원") {
@@ -359,7 +380,7 @@
           db.collection("students").doc(s.id).update({ leftOn: leftEd.value || null, leaveReasons: read(reasons) }).then(function () { lm.className = "msg good"; lm.textContent = "퇴원일과 사유를 저장했습니다."; }, function () { lm.className = "msg bad"; lm.textContent = "저장하지 못했습니다. 연결을 확인해 주세요."; });
         } }, "퇴원일 · 사유 저장"), lm));
       }
-      box.appendChild(h("div", { class: "row" }, h("button", { class: "btn pri", type: "button", onclick: function () { setStatus({ status: "재원", leftOn: null, leaveReasons: [] }, "재원"); } }, "재원으로 되돌리기"), sm));
+      box.appendChild(h("div", { class: "row" }, h("button", { class: "btn pri", type: "button", onclick: function () { setStatus({ status: "재원", leftOn: null, leavePlannedOn: null, leaveReasons: [] }, "재원"); } }, "재원으로 되돌리기"), sm));
       box.appendChild(h("p", { class: "msg", text: "되돌린 뒤 수업 시간을 다시 골라 저장해 주세요." }));
     }
     view.appendChild(box);
