@@ -338,15 +338,27 @@
     function setStatus(patch, text) { db.collection("students").doc(s.id).update(patch).then(function () { go("roster"); }, function () { sm.className = "msg bad"; sm.textContent = text + " 처리를 하지 못했습니다."; }); }
     var box = h("div", { class: "box" });
     if (s.status === "재원") {
-      box.appendChild(h("label", null, "퇴원 사유 (여러 개 가능)")); box.appendChild(reasons);
+      var leftIn = h("input", { type: "date", value: today(), max: today() });
+      box.appendChild(h("label", null, "퇴원일", leftIn));
+      box.appendChild(h("label", { style: "margin-top:12px" }, "퇴원 사유 (여러 개 가능)")); box.appendChild(reasons);
       box.appendChild(h("div", { class: "row", style: "margin-top:12px" },
         h("button", { class: "btn danger", type: "button", onclick: function (e) {
           if (!e.currentTarget.dataset.sure) { e.currentTarget.dataset.sure = "1"; e.currentTarget.textContent = "한 번 더 누르면 퇴원 처리됩니다"; return; }
-          setStatus({ status: "퇴원", leftOn: today(), leaveReasons: read(reasons), slots: [] }, "퇴원");
+          if (!leftIn.value) { sm.className = "msg bad"; sm.textContent = "퇴원일을 적어 주세요."; return; }
+          setStatus({ status: "퇴원", leftOn: leftIn.value, leaveReasons: read(reasons), slots: [] }, "퇴원");
         } }, "퇴원 처리"),
         h("button", { class: "btn", type: "button", onclick: function () { setStatus({ status: "휴원", slots: [] }, "휴원"); } }, "휴원 처리"), sm));
       box.appendChild(h("p", { class: "msg", text: "퇴원 · 휴원 처리하면 시간표에서 자동으로 빠집니다. 기록은 지워지지 않습니다." }));
     } else {
+      if (s.status === "퇴원") {
+        var leftEd = h("input", { type: "date", value: s.leftOn || "", max: today() }), lm = h("span", { class: "msg" });
+        box.appendChild(h("label", null, "퇴원일", leftEd));
+        box.appendChild(h("label", { style: "margin-top:12px" }, "퇴원 사유 (여러 개 가능)")); box.appendChild(reasons);
+        box.appendChild(h("div", { class: "row", style: "margin:12px 0 20px" }, h("button", { class: "btn", type: "button", onclick: function () {
+          lm.className = "msg"; lm.textContent = "저장하는 중입니다.";
+          db.collection("students").doc(s.id).update({ leftOn: leftEd.value || null, leaveReasons: read(reasons) }).then(function () { lm.className = "msg good"; lm.textContent = "퇴원일과 사유를 저장했습니다."; }, function () { lm.className = "msg bad"; lm.textContent = "저장하지 못했습니다. 연결을 확인해 주세요."; });
+        } }, "퇴원일 · 사유 저장"), lm));
+      }
       box.appendChild(h("div", { class: "row" }, h("button", { class: "btn pri", type: "button", onclick: function () { setStatus({ status: "재원", leftOn: null, leaveReasons: [] }, "재원"); } }, "재원으로 되돌리기"), sm));
       box.appendChild(h("p", { class: "msg", text: "되돌린 뒤 수업 시간을 다시 골라 저장해 주세요." }));
     }
